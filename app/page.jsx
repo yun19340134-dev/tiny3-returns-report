@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import data from "../data/dashboard-data.json";
+import ratings from "../data/ratings-data.json";
 
 const FAMILY_COLORS = {
   "Tiny 系列": "#ff6846",
@@ -269,6 +270,107 @@ function VoiceCards({ comments }) {
   );
 }
 
+const reviewCount = (value) => {
+  if (value === null || value === undefined) return "—";
+  if (value >= 1000) {
+    const scaled = value / 1000;
+    return `${Number.isInteger(scaled) ? scaled.toFixed(0) : scaled.toFixed(1)}k`;
+  }
+  return number(value);
+};
+
+const ratingTone = (value) => {
+  if (value === null || value === undefined) return "unavailable";
+  if (value < 4.3) return "low";
+  if (value < 4.5) return "watch";
+  return "healthy";
+};
+
+function primaryListing(model, site) {
+  const candidates = ratings.listings.filter(
+    (listing) => listing.model === model && listing.site === site
+  );
+  const available = candidates
+    .filter((listing) => listing.rating !== null)
+    .sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
+  return available[0] || candidates[0] || null;
+}
+
+function RatingCell({ listing }) {
+  if (!listing || listing.rating === null) {
+    return <div className="rating-cell unavailable"><strong>—</strong><span>暂无星级</span></div>;
+  }
+  return (
+    <div className={`rating-cell ${ratingTone(listing.rating)}`} title={`${listing.variant} · ${listing.asin}`}>
+      <strong><i>★</i>{listing.rating.toFixed(1)}</strong>
+      <span>{reviewCount(listing.reviews)} 条评论</span>
+    </div>
+  );
+}
+
+function RatingMatrix({ onSelect }) {
+  const models = ratings.modelOrder.filter((model) => !model.startsWith("配件-"));
+  return (
+    <div className="rating-matrix">
+      <div className="rating-row rating-head">
+        <span>产品型号</span>
+        {ratings.sites.map((site) => <span key={site.id}>{site.name}<small>{site.marketplace}</small></span>)}
+      </div>
+      {models.map((model) => {
+        const canSelect = data.models.some((item) => item.name === model);
+        return (
+          <button
+            type="button"
+            className={`rating-row ${canSelect ? "clickable" : ""}`}
+            key={model}
+            onClick={() => canSelect && onSelect(model)}
+          >
+            <span><b>{model}</b>{data.focusModels.includes(model) && <em>重点</em>}</span>
+            {ratings.sites.map((site) => <RatingCell key={site.id} listing={primaryListing(model, site.id)} />)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function SiteListingDetails({ site, onSiteChange }) {
+  const rows = ratings.listings
+    .filter((listing) => listing.site === site)
+    .sort((a, b) => {
+      if (a.rating === null) return 1;
+      if (b.rating === null) return -1;
+      return a.rating - b.rating || (b.reviews || 0) - (a.reviews || 0);
+    });
+  const lowCount = rows.filter((row) => row.rating !== null && row.rating < 4.3).length;
+  return (
+    <div className="site-listings">
+      <div className="site-tabs">
+        {ratings.sites.map((item) => (
+          <button type="button" className={site === item.id ? "active" : ""} key={item.id} onClick={() => onSiteChange(item.id)}>
+            {item.name}
+          </button>
+        ))}
+      </div>
+      <div className="rating-summary">
+        <span>可见 Listing <b>{rows.length}</b></span>
+        <span>低于 4.3 星 <b className={lowCount ? "rating-alert" : ""}>{lowCount}</b></span>
+      </div>
+      <div className="listing-scroll">
+        {rows.map((row) => (
+          <div className="listing-row" key={`${row.site}-${row.asin}`}>
+            <div><b>{row.model}</b><span>{row.variant} · {row.asin}</span></div>
+            <div className={ratingTone(row.rating)}>
+              <strong>{row.rating === null ? "—" : `★ ${row.rating.toFixed(1)}`}</strong>
+              <span>{row.reviews === null ? "暂无评论" : `${reviewCount(row.reviews)} 评论`}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function LeadershipActions() {
   const actions = [
     ["P0", "兼容与场景边界前置", "不兼容、与描述不符和误购合计占比较高；Listing首屏应明确接口、系统、软件与典型场景边界。"],
@@ -281,6 +383,7 @@ function LeadershipActions() {
 export default function Page() {
   const [family, setFamily] = useState("全部");
   const [selectedModel, setSelectedModel] = useState("ALL");
+  const [ratingSite, setRatingSite] = useState("DE");
 
   const familyModels = useMemo(() => data.models.filter((model) => family === "全部" || model.family === family), [family]);
   const scopeModels = useMemo(() => selectedModel === "ALL" ? familyModels : data.models.filter((model) => model.name === selectedModel), [familyModels, selectedModel]);
@@ -322,6 +425,16 @@ export default function Page() {
         <Kpi label="Top 1 退货原因" value={reasons[0]?.label || "—"} note={`${number(reasons[0]?.count || 0)} 件 · ${pct(reasons[0]?.share || 0)}`} />
         <Kpi label="具体留言覆盖" value={pct(commentCount / total)} note={`${number(commentCount)} 件包含客户留言`} tone="mint" />
         <Kpi label="覆盖型号" value={number(scopeModels.length)} note={`全量共 ${data.meta.modelCount} 个型号/配件类别`} tone="purple" />
+      </section>
+
+      <section className="rating-grid">
+        <Panel title="欧洲站点星级对比" subtitle="同型号多颜色/ASIN时展示截图中评论数最多的主 Listing；点击型号可下钻退货原因" tag={`快照 ${ratings.snapshotDate}`} className="rating-matrix-panel">
+          <RatingMatrix onSelect={selectModel} />
+          <div className="rating-legend"><span className="healthy">≥ 4.5 健康</span><span className="watch">4.3–4.4 关注</span><span className="low">＜ 4.3 预警</span><small>“—”表示截图未显示或星级不可用</small></div>
+        </Panel>
+        <Panel title="站点 Listing 明细" subtitle="保留颜色/版本、ASIN、星级与评论数；按低星级优先排列" tag="截图可见范围" className="listing-panel">
+          <SiteListingDetails site={ratingSite} onSiteChange={setRatingSite} />
+        </Panel>
       </section>
 
       <section className="main-grid">
