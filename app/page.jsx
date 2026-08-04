@@ -1,570 +1,360 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import data from "../data/focus-data.json";
+import data from "../data/dashboard-data.json";
 
-const PRODUCT_COLORS = {
-  "Tiny 3": "#ff6b35",
-  "Tiny 3 Lite": "#1ec8a5",
+const FAMILY_COLORS = {
+  "Tiny 系列": "#ff6846",
+  "Meet 系列": "#2d7ff9",
+  "Tail 系列": "#8a68e8",
+  "其他产品": "#16b99a",
+  配件: "#e9a93a",
 };
-const PRODUCTS = ["Tiny 3", "Tiny 3 Lite"];
+const GROUP_COLORS = {
+  "产品体验 / 技术问题": "#ff6846",
+  "主观需求 / 购买决策": "#f0b544",
+  "配送 / 履约": "#2d7ff9",
+  "仓储 / 运输损坏": "#8a68e8",
+  "其他 / 未说明": "#7d8798",
+};
+const FAMILY_OPTIONS = ["全部", "Tiny 系列", "Meet 系列", "Tail 系列", "其他产品", "配件"];
 
-const formatNumber = (value) => new Intl.NumberFormat("zh-CN").format(value);
-const percent = (value, digits = 1) =>
-  new Intl.NumberFormat("zh-CN", {
-    style: "percent",
-    maximumFractionDigits: digits,
-    minimumFractionDigits: digits,
-  }).format(value);
+const number = (value) => new Intl.NumberFormat("zh-CN").format(Math.round(value));
+const pct = (value, digits = 1) => `${(value * 100).toFixed(digits)}%`;
 
-function Eyebrow({ children }) {
-  return <div className="eyebrow">{children}</div>;
+function aggregateReasons(models) {
+  const denominator = models.reduce((sum, model) => sum + model.count, 0) || 1;
+  const map = new Map();
+  models.forEach((model) => {
+    model.reasons.forEach((reason) => {
+      const current = map.get(reason.label) || {
+        label: reason.label,
+        group: reason.group,
+        count: 0,
+      };
+      current.count += reason.count;
+      map.set(reason.label, current);
+    });
+  });
+  return Array.from(map.values())
+    .map((row) => ({ ...row, share: row.count / denominator }))
+    .sort((a, b) => b.count - a.count);
 }
 
-function SectionHeading({ index, kicker, title, copy }) {
-  return (
-    <div className="section-heading">
-      <div className="section-index">{index}</div>
-      <div>
-        <Eyebrow>{kicker}</Eyebrow>
-        <h2>{title}</h2>
-        {copy && <p>{copy}</p>}
-      </div>
-    </div>
-  );
+function aggregateMonthly(models) {
+  const map = new Map();
+  models.forEach((model) => {
+    model.monthly.forEach((row) => {
+      map.set(row.month, (map.get(row.month) || 0) + row.count);
+    });
+  });
+  return Array.from(map.entries())
+    .map(([month, count]) => ({ month, count }))
+    .sort((a, b) => a.month.localeCompare(b.month));
 }
 
-function Metric({ value, label, note, tone = "plain" }) {
+function FilterBar({ family, model, onFamilyChange, onModelChange, models }) {
   return (
-    <div className={`metric metric-${tone}`}>
-      <div className="metric-value">{value}</div>
-      <div className="metric-label">{label}</div>
-      <div className="metric-note">{note}</div>
-    </div>
-  );
-}
-
-function ScopeRail() {
-  const tiny3 = data.products["Tiny 3"];
-  const lite = data.products["Tiny 3 Lite"];
-  const total = tiny3.count + lite.count;
-  return (
-    <div className="scope-rail">
-      <div className="scope-head">
-        <span>两款重点产品的退货件数构成</span>
-        <strong>{formatNumber(total)} 件</strong>
-      </div>
-      <div className="scope-bar" aria-label="Tiny 3 与 Tiny 3 Lite 退货件数构成">
-        <div
-          className="scope-segment scope-tiny3"
-          style={{ width: `${(tiny3.count / total) * 100}%` }}
-        >
-          <span>Tiny 3</span>
-          <strong>{percent(tiny3.count / total, 0)}</strong>
-        </div>
-        <div
-          className="scope-segment scope-lite"
-          style={{ width: `${(lite.count / total) * 100}%` }}
-        >
-          <span>Tiny 3 Lite</span>
-          <strong>{percent(lite.count / total, 0)}</strong>
-        </div>
-      </div>
-      <div className="scope-foot">
-        <span>统计范围：{data.scope.dateMin} — {data.scope.dateMax}</span>
-        <span>四份报告合并去重；不是退货率</span>
-      </div>
-    </div>
-  );
-}
-
-function ProductProfile({ product }) {
-  const item = data.products[product];
-  const color = PRODUCT_COLORS[product];
-  const topReasons = item.reasons.slice(0, 3);
-  return (
-    <article className="product-profile" style={{ "--product": color }}>
-      <div className="product-profile-head">
-        <div>
-          <span className="product-dot" />
-          <h3>{product}</h3>
-        </div>
-        <span className="product-volume">{formatNumber(item.count)} 件</span>
-      </div>
-      <div className="profile-kpis">
-        <div>
-          <strong>{percent(item.productIssueShare)}</strong>
-          <span>产品体验 / 技术原因构成</span>
-        </div>
-        <div>
-          <strong>{percent(item.commentCoverage)}</strong>
-          <span>具体留言覆盖</span>
-        </div>
-      </div>
-      <ol className="reason-rank">
-        {topReasons.map((reason) => (
-          <li key={reason.code}>
-            <span>{reason.rank}</span>
-            <div>
-              <b>{reason.label}</b>
-              <small>{formatNumber(reason.count)} 件 · {percent(reason.share)}</small>
-            </div>
-          </li>
+    <div className="filter-bar">
+      <div className="family-tabs" aria-label="产品系列筛选">
+        {FAMILY_OPTIONS.map((option) => (
+          <button
+            type="button"
+            key={option}
+            className={family === option ? "active" : ""}
+            onClick={() => onFamilyChange(option)}
+          >
+            {option}
+          </button>
         ))}
-      </ol>
+      </div>
+      <label className="model-select">
+        <span>型号</span>
+        <select value={model} onChange={(event) => onModelChange(event.target.value)}>
+          <option value="ALL">当前系列合计</option>
+          {models.map((item) => (
+            <option value={item.name} key={item.name}>
+              {item.isFocus ? "★ " : ""}{item.name}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  );
+}
+
+function Kpi({ label, value, note, tone = "" }) {
+  return (
+    <article className={`kpi ${tone}`}>
+      <div className="kpi-label">{label}</div>
+      <strong>{value}</strong>
+      <p>{note}</p>
     </article>
   );
 }
 
-function ComparisonBars() {
-  const rows = useMemo(() => {
-    const labels = new Set();
-    PRODUCTS.forEach((product) =>
-      data.products[product].reasons.slice(0, 10).forEach((r) => labels.add(r.label))
-    );
-    return Array.from(labels)
-      .map((label) => {
-        const get = (product) =>
-          data.products[product].reasons.find((r) => r.label === label) || {
-            count: 0,
-            share: 0,
-          };
-        return {
-          label,
-          tiny3: get("Tiny 3"),
-          lite: get("Tiny 3 Lite"),
-        };
-      })
-      .sort((a, b) => Math.max(b.tiny3.share, b.lite.share) - Math.max(a.tiny3.share, a.lite.share))
-      .slice(0, 9);
-  }, []);
-  const maxShare = Math.max(...rows.flatMap((r) => [r.tiny3.share, r.lite.share]));
+function Panel({ title, subtitle, tag, className = "", children }) {
   return (
-    <div className="reason-comparison">
-      <div className="comparison-legend">
-        <span><i className="legend-tiny3" /> Tiny 3</span>
-        <span><i className="legend-lite" /> Tiny 3 Lite</span>
-        <small>条长按两款中的最大占比缩放</small>
-      </div>
-      <div className="comparison-table">
-        {rows.map((row) => (
-          <div className="comparison-row" key={row.label}>
-            <div className="bar-side bar-left">
-              <span>{row.tiny3.count ? percent(row.tiny3.share) : "—"}</span>
-              <div className="bar-track">
-                <div
-                  className="bar-fill fill-tiny3"
-                  style={{ width: `${(row.tiny3.share / maxShare) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div className="comparison-label">{row.label}</div>
-            <div className="bar-side bar-right">
-              <div className="bar-track">
-                <div
-                  className="bar-fill fill-lite"
-                  style={{ width: `${(row.lite.share / maxShare) * 100}%` }}
-                />
-              </div>
-              <span>{row.lite.count ? percent(row.lite.share) : "—"}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TrendChart() {
-  const width = 960;
-  const height = 300;
-  const pad = { left: 52, right: 28, top: 26, bottom: 46 };
-  const max = Math.max(...data.monthly.flatMap((d) => [d.tiny3, d.tiny3lite])) * 1.12;
-  const x = (i) =>
-    pad.left + (i * (width - pad.left - pad.right)) / Math.max(1, data.monthly.length - 1);
-  const y = (v) => pad.top + (1 - v / max) * (height - pad.top - pad.bottom);
-  const pathFor = (key) =>
-    data.monthly.map((d, i) => `${i ? "L" : "M"} ${x(i)} ${y(d[key])}`).join(" ");
-  const ticks = [0, 0.25, 0.5, 0.75, 1].map((n) => Math.round(max * n));
-  return (
-    <div className="trend-wrap">
-      <svg
-        className="trend-chart"
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label="Tiny 3 与 Tiny 3 Lite 月度退货件数趋势"
-      >
-        {ticks.map((tick) => (
-          <g key={tick}>
-            <line
-              x1={pad.left}
-              x2={width - pad.right}
-              y1={y(tick)}
-              y2={y(tick)}
-              className="gridline"
-            />
-            <text x={pad.left - 12} y={y(tick) + 4} textAnchor="end" className="axis-text">
-              {tick}
-            </text>
-          </g>
-        ))}
-        <path d={pathFor("tiny3")} className="trend-line trend-tiny3" />
-        <path d={pathFor("tiny3lite")} className="trend-line trend-lite" />
-        {data.monthly.map((d, i) => (
-          <g key={d.month}>
-            <text x={x(i)} y={height - 14} textAnchor="middle" className="axis-text">
-              {d.month.slice(5)}月
-            </text>
-            <circle cx={x(i)} cy={y(d.tiny3)} r="5" className="point point-tiny3" />
-            <circle cx={x(i)} cy={y(d.tiny3lite)} r="5" className="point point-lite" />
-          </g>
-        ))}
-      </svg>
-      <div className="trend-legend">
-        <span><i className="legend-tiny3" />Tiny 3</span>
-        <span><i className="legend-lite" />Tiny 3 Lite</span>
-        <small>7月仅统计至7月20日，不与完整月份直接比较</small>
-      </div>
-    </div>
-  );
-}
-
-function ThemeExplorer() {
-  const [product, setProduct] = useState("Tiny 3");
-  const item = data.products[product];
-  const max = Math.max(...item.themes.map((theme) => theme.count));
-  return (
-    <div className="theme-explorer">
-      <div className="tab-list" role="tablist" aria-label="选择产品">
-        {PRODUCTS.map((name) => (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={product === name}
-            className={product === name ? "active" : ""}
-            style={{ "--product": PRODUCT_COLORS[name] }}
-            onClick={() => setProduct(name)}
-            key={name}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-      <div className="theme-grid">
-        {item.themes.slice(0, 10).map((theme, index) => (
-          <article className="theme-card" key={theme.label}>
-            <div className="theme-rank">{String(index + 1).padStart(2, "0")}</div>
-            <div className="theme-card-body">
-              <div className="theme-card-head">
-                <h3>{theme.label}</h3>
-                <span>{formatNumber(theme.count)} 次</span>
-              </div>
-              <div className="theme-meter">
-                <div
-                  style={{
-                    width: `${(theme.count / max) * 100}%`,
-                    background: PRODUCT_COLORS[product],
-                  }}
-                />
-              </div>
-              <p>占有留言件数 {percent(theme.share)}</p>
-              {theme.examples[0] && <blockquote>“{theme.examples[0]}”</blockquote>}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CommentExplorer() {
-  const [product, setProduct] = useState("Tiny 3");
-  const [theme, setTheme] = useState("全部主题");
-  const [visible, setVisible] = useState(6);
-  const comments = data.products[product].comments;
-  const themes = ["全部主题", ...Array.from(new Set(comments.map((c) => c.theme)))];
-  const filtered = comments.filter((c) => theme === "全部主题" || c.theme === theme);
-  const switchProduct = (name) => {
-    setProduct(name);
-    setTheme("全部主题");
-    setVisible(6);
-  };
-  return (
-    <div className="comment-explorer">
-      <div className="filter-bar">
-        <div className="segmented">
-          {PRODUCTS.map((name) => (
-            <button
-              type="button"
-              className={product === name ? "active" : ""}
-              onClick={() => switchProduct(name)}
-              key={name}
-            >
-              {name}
-            </button>
-          ))}
+    <section className={`panel ${className}`}>
+      <header className="panel-header">
+        <div>
+          <h2>{title}</h2>
+          {subtitle && <p>{subtitle}</p>}
         </div>
-        <label>
-          <span>主题筛选</span>
-          <select value={theme} onChange={(e) => { setTheme(e.target.value); setVisible(6); }}>
-            {themes.map((name) => <option key={name}>{name}</option>)}
-          </select>
-        </label>
-        <span className="result-count">{filtered.length} 条代表性留言</span>
+        {tag && <span className="panel-tag">{tag}</span>}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function ModelRanking({ models, selectedModel, onSelect }) {
+  const rows = [...models].sort((a, b) => b.count - a.count).slice(0, 12);
+  const max = Math.max(...rows.map((row) => row.count), 1);
+  return (
+    <div className="model-ranking">
+      <div className="model-row model-row-head">
+        <span>排名 / 型号</span><span>退货件数</span><span>技术问题</span>
       </div>
-      <div className="comment-grid">
-        {filtered.slice(0, visible).map((comment, index) => (
-          <article className="comment-card" key={`${comment.date}-${comment.text}-${index}`}>
-            <div className="comment-meta">
-              <span className="theme-pill">{comment.theme}</span>
-              <span>{comment.date}</span>
-            </div>
-            <blockquote>“{comment.text}”</blockquote>
-            <div className="comment-foot">
-              <span>{comment.reason}</span>
-              {comment.translated && <span className="translated">中文译文</span>}
-            </div>
-          </article>
-        ))}
-      </div>
-      {visible < filtered.length && (
-        <button type="button" className="load-more" onClick={() => setVisible((v) => v + 6)}>
-          展开更多留言
+      {rows.map((row, index) => (
+        <button
+          type="button"
+          className={`model-row ${selectedModel === row.name ? "selected" : ""}`}
+          key={row.name}
+          onClick={() => onSelect(row.name)}
+        >
+          <span className="model-name">
+            <i>{String(index + 1).padStart(2, "0")}</i>
+            <b>{row.name}</b>
+            {row.isFocus && <em>重点</em>}
+          </span>
+          <span className="model-volume">
+            <b>{number(row.count)}</b>
+            <i><u style={{ width: `${(row.count / max) * 100}%`, background: FAMILY_COLORS[row.family] }} /></i>
+          </span>
+          <strong className={row.productIssueShare >= 0.6 ? "risk-high" : ""}>
+            {pct(row.productIssueShare)}
+          </strong>
         </button>
-      )}
+      ))}
     </div>
   );
 }
 
-const ACTIONS = [
-  {
-    priority: "P0",
-    issue: "兼容 / 接口 / 场景边界不清",
-    evidence: "两款均高频出现；涉及 USB、会议软件、采集卡、Rodecaster、无线/绿幕等预期。",
-    action: "建立一页式兼容矩阵；Listing首屏明确“支持 / 不支持 / 需软件”的边界。",
-    owner: "产品营销 + 客服",
-  },
-  {
-    priority: "P0",
-    issue: "连接识别与软件设置摩擦",
-    evidence: "Tiny 3 的软件/设置、识别、升级失败反馈集中；Lite也出现配置失败。",
-    action: "按 Win / macOS / 常用会议软件做首次连接与固件升级回归；重写5分钟上手流程。",
-    owner: "软件 + QA",
-  },
-  {
-    priority: "P1",
-    issue: "画质提升感知不足",
-    evidence: "模糊、变焦后画质、4K限制、白平衡和低光表现影响“值不值”的判断。",
-    action: "优化默认画质参数；用真实场景对比说明分辨率、帧率、变焦和低光边界。",
-    owner: "影像 + 内容",
-  },
-  {
-    priority: "P1",
-    issue: "PTZ / 语音 / 手势行为不稳定",
-    evidence: "异常缩放、乱转、跟踪不准、自动休眠或误触会直接破坏会议体验。",
-    action: "建立误触与异常运动测试集；默认降低高风险自动行为并提供一键关闭。",
-    owner: "算法 + 固件",
-  },
-  {
-    priority: "P1",
-    issue: "Tiny 3 与 Lite 选择困难",
-    evidence: "存在买错版本、功能不符、升级价值不足、Lite体积/能力低于预期等反馈。",
-    action: "增加三问式选型器与对比表：接口、传感器、音频、跟踪、适用场景、预算。",
-    owner: "产品 + 电商",
-  },
-];
-
-function ActionMatrix() {
+function ReasonRanking({ reasons, color }) {
+  const max = Math.max(...reasons.slice(0, 8).map((row) => row.share), 0.01);
   return (
-    <div className="action-matrix">
-      <div className="action-head action-row">
-        <span>优先级</span><span>问题机会</span><span>证据解释</span><span>建议动作</span><span>建议Owner</span>
-      </div>
-      {ACTIONS.map((row) => (
-        <div className="action-row" key={row.issue}>
-          <span><b className={`priority ${row.priority.toLowerCase()}`}>{row.priority}</b></span>
-          <span><strong>{row.issue}</strong></span>
-          <span>{row.evidence}</span>
-          <span>{row.action}</span>
-          <span>{row.owner}</span>
+    <div className="reason-ranking">
+      {reasons.slice(0, 8).map((row, index) => (
+        <div className="reason-row" key={row.label}>
+          <span className="reason-index">{index + 1}</span>
+          <div className="reason-label"><b>{row.label}</b><small>{row.group}</small></div>
+          <div className="reason-track"><i style={{ width: `${(row.share / max) * 100}%`, background: color }} /></div>
+          <strong>{pct(row.share)}</strong>
+          <span>{number(row.count)}件</span>
         </div>
       ))}
     </div>
   );
 }
 
-export default function Page() {
+function GroupDonut({ reasons, total }) {
+  const groups = useMemo(() => {
+    const map = new Map();
+    reasons.forEach((row) => map.set(row.group, (map.get(row.group) || 0) + row.count));
+    return Array.from(map.entries())
+      .map(([group, count]) => ({ group, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [reasons]);
+  let cursor = 0;
+  const gradient = groups.map((row) => {
+    const start = cursor;
+    cursor += (row.count / total) * 100;
+    return `${GROUP_COLORS[row.group] || "#7d8798"} ${start}% ${cursor}%`;
+  }).join(", ");
   return (
-    <main>
-      <header className="site-nav">
-        <a className="brand" href="#top">
-          <span className="brand-mark">T3</span>
-          <span>Tiny 3 Series<br /><small>Returns Intelligence</small></span>
-        </a>
-        <nav aria-label="页面导航">
-          <a href="#overview">结论</a>
-          <a href="#reasons">原因对比</a>
-          <a href="#themes">差评主题</a>
-          <a href="#evidence">原声证据</a>
-          <a href="#actions">行动建议</a>
-        </nav>
-        <button className="print-button" type="button" onClick={() => window.print()}>
-          打印 / 导出 PDF
+    <div className="group-layout">
+      <div className="donut" style={{ background: `conic-gradient(${gradient})` }}>
+        <div><strong>{pct(groups.find((row) => row.group === "产品体验 / 技术问题")?.count / total || 0)}</strong><span>技术问题</span></div>
+      </div>
+      <div className="group-legend">
+        {groups.map((row) => (
+          <div key={row.group}>
+            <i style={{ background: GROUP_COLORS[row.group] || "#7d8798" }} />
+            <span>{row.group}</span><b>{pct(row.count / total)}</b><small>{number(row.count)}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrendChart({ rows, color }) {
+  const width = 760;
+  const height = 235;
+  const pad = { left: 46, right: 18, top: 18, bottom: 38 };
+  const maxValue = Math.max(...rows.map((row) => row.count), 1);
+  const chartMax = Math.ceil((maxValue * 1.12) / 100) * 100 || 100;
+  const x = (index) => pad.left + (index * (width - pad.left - pad.right)) / Math.max(rows.length - 1, 1);
+  const y = (value) => pad.top + (1 - value / chartMax) * (height - pad.top - pad.bottom);
+  const path = rows.map((row, index) => `${index ? "L" : "M"} ${x(index)} ${y(row.count)}`).join(" ");
+  const area = `${path} L ${x(rows.length - 1)} ${height - pad.bottom} L ${x(0)} ${height - pad.bottom} Z`;
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => Math.round(chartMax * ratio));
+  return (
+    <div className="trend-chart">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="月度退货件数趋势">
+        <defs><linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.22" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient></defs>
+        {ticks.map((tick) => <g key={tick}><line x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} /><text x={pad.left - 10} y={y(tick) + 4} textAnchor="end">{number(tick)}</text></g>)}
+        <path d={area} className="trend-area" />
+        <path d={path} className="trend-line" style={{ stroke: color }} />
+        {rows.map((row, index) => <g key={row.month}><circle cx={x(index)} cy={y(row.count)} r="4" style={{ fill: color }} /><text x={x(index)} y={height - 12} textAnchor="middle">{row.month.slice(5)}月</text></g>)}
+      </svg>
+      <div className="trend-foot"><span><i style={{ background: color }} />当前筛选退货件数</span><small>7月数据截至7月20日，不与完整月份直接比较</small></div>
+    </div>
+  );
+}
+
+function FocusMatrix({ models, onSelect }) {
+  return (
+    <div className="focus-matrix">
+      <div className="focus-row focus-head"><span>重点型号</span><span>件数</span><span>技术问题</span><span>Top 1 原因</span><span>Top 2 原因</span></div>
+      {models.map((model) => (
+        <button type="button" className="focus-row" key={model.name} onClick={() => onSelect(model.name)}>
+          <span><i style={{ background: FAMILY_COLORS[model.family] }} /><b>{model.name}</b></span>
+          <span>{number(model.count)}</span>
+          <span className={model.productIssueShare >= 0.6 ? "risk-high" : ""}>{pct(model.productIssueShare)}</span>
+          <span><b>{model.reasons[0]?.label}</b><small>{pct(model.reasons[0]?.share || 0)}</small></span>
+          <span><b>{model.reasons[1]?.label}</b><small>{pct(model.reasons[1]?.share || 0)}</small></span>
         </button>
+      ))}
+    </div>
+  );
+}
+
+function ReasonHeatmap({ models }) {
+  const topLabels = aggregateReasons(models).slice(0, 8).map((row) => row.label);
+  const cell = (model, label) => model.reasons.find((row) => row.label === label)?.share || 0;
+  const max = Math.max(...models.flatMap((model) => topLabels.map((label) => cell(model, label))), 0.01);
+  return (
+    <div className="heatmap-wrap">
+      <div className="heatmap" style={{ "--reason-columns": topLabels.length }}>
+        <div className="heat-corner">重点产品</div>
+        {topLabels.map((label) => <div className="heat-label" key={label}>{label}</div>)}
+        {models.map((model) => (
+          <div className="heat-row" key={model.name}>
+            <div className="heat-model">{model.name}</div>
+            {topLabels.map((label) => {
+              const value = cell(model, label);
+              const alpha = 0.08 + (value / max) * 0.72;
+              return <div className="heat-cell" key={label} style={{ background: `rgba(255,104,70,${alpha})`, color: alpha > 0.48 ? "white" : "#293247" }}>{pct(value)}</div>;
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VoiceCards({ comments }) {
+  return (
+    <div className="voice-list">
+      {comments.slice(0, 3).map((comment, index) => (
+        <article key={`${comment.product}-${comment.date}-${index}`}>
+          <div><span>{comment.product}</span><em>{comment.reason}</em><time>{comment.date}</time></div>
+          <blockquote>“{comment.text}”</blockquote>
+          <p>{comment.themes.slice(0, 2).join(" · ") || "其他具体反馈"}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function LeadershipActions() {
+  const actions = [
+    ["P0", "兼容与场景边界前置", "不兼容、与描述不符和误购合计占比较高；Listing首屏应明确接口、系统、软件与典型场景边界。"],
+    ["P0", "故障与质量专项闭环", "围绕识别、连接、画质、音频、PTZ与固件升级建立型号级问题池，按高退货量型号优先回归。"],
+    ["P1", "重点型号分层治理", "Tiny 3 / Lite偏技术体验，Meet系列需同时处理预期管理；Tiny 2 Lite重点关注质量与版本选择。"],
+  ];
+  return <div className="action-list">{actions.map(([priority, title, text]) => <article key={title}><span>{priority}</span><div><b>{title}</b><p>{text}</p></div></article>)}</div>;
+}
+
+export default function Page() {
+  const [family, setFamily] = useState("全部");
+  const [selectedModel, setSelectedModel] = useState("ALL");
+
+  const familyModels = useMemo(() => data.models.filter((model) => family === "全部" || model.family === family), [family]);
+  const scopeModels = useMemo(() => selectedModel === "ALL" ? familyModels : data.models.filter((model) => model.name === selectedModel), [familyModels, selectedModel]);
+  const reasons = useMemo(() => aggregateReasons(scopeModels), [scopeModels]);
+  const monthly = useMemo(() => aggregateMonthly(scopeModels), [scopeModels]);
+  const total = scopeModels.reduce((sum, model) => sum + model.count, 0);
+  const issueCount = scopeModels.reduce((sum, model) => sum + model.productIssueCount, 0);
+  const commentCount = scopeModels.reduce((sum, model) => sum + model.commentCount, 0);
+  const currentName = selectedModel === "ALL" ? (family === "全部" ? "全产品" : family) : selectedModel;
+  const currentColor = selectedModel === "ALL" ? (family === "全部" ? "#ff6846" : FAMILY_COLORS[family]) : FAMILY_COLORS[scopeModels[0]?.family] || "#ff6846";
+  const focusModels = data.focusModels.map((name) => data.models.find((model) => model.name === name)).filter(Boolean);
+  const comments = scopeModels
+    .flatMap((model) => model.comments.map((comment) => ({ ...comment, product: model.name })))
+    .sort((a, b) => {
+      const aChinese = /[\u4e00-\u9fff]/.test(a.text) ? 1 : 0;
+      const bChinese = /[\u4e00-\u9fff]/.test(b.text) ? 1 : 0;
+      return bChinese - aChinese || b.date.localeCompare(a.date);
+    });
+
+  const changeFamily = (nextFamily) => { setFamily(nextFamily); setSelectedModel("ALL"); };
+  const selectModel = (name) => { const item = data.models.find((model) => model.name === name); if (item) setFamily(item.family); setSelectedModel(name); };
+
+  return (
+    <main className="dashboard-shell">
+      <header className="dashboard-header">
+        <div className="title-block"><div className="brand-mark">OB</div><div><p>Amazon Customer Return · 2026 YTD</p><h1>OBSBOT 全型号退货原因管理看板</h1></div></div>
+        <div className="header-meta"><span>数据更新至 {data.meta.dateMax}</span><button type="button" onClick={() => window.print()}>导出 PDF</button></div>
       </header>
 
-      <section className="hero" id="top">
-        <div className="hero-orbit orbit-one" />
-        <div className="hero-orbit orbit-two" />
-        <div className="hero-copy">
-          <Eyebrow>Amazon 全站点 · Customer Return Voice</Eyebrow>
-          <h1>
-            Tiny 3 系列<br />
-            <span>退货差评诊断</span>
-          </h1>
-          <p>
-            聚焦 <b>Tiny 3</b> 与 <b>Tiny 3 Lite</b>，把结构化退货原因、买家留言主题和改进动作放在同一条汇报逻辑里。
-          </p>
-          <div className="hero-chips">
-            <span>4份报告合并</span>
-            <span>{formatNumber(data.scope.sourceRows)} 条源记录</span>
-            <span>剔除 {formatNumber(data.scope.duplicatesRemoved)} 条重复</span>
-          </div>
-        </div>
-        <div className="hero-visual" aria-hidden="true">
-          <div className="camera camera-main">
-            <div className="camera-lens"><i /></div>
-            <span>TINY 3</span>
-          </div>
-          <div className="camera camera-lite">
-            <div className="camera-lens"><i /></div>
-            <span>LITE</span>
-          </div>
-          <div className="signal signal-a" />
-          <div className="signal signal-b" />
-        </div>
-        <div className="hero-note">
-          <strong>口径提醒</strong>
-          <span>缺少销量 / 发货量分母，本页展示的是退货件数与原因构成，不是型号退货率。</span>
-        </div>
+      <FilterBar family={family} model={selectedModel} onFamilyChange={changeFamily} onModelChange={setSelectedModel} models={familyModels} />
+
+      <div className="scope-strip">
+        <strong>当前视图：{currentName}</strong><span>{scopeModels.length} 个型号</span><span>4份报告合并去重</span><span>{number(data.meta.rawRows)} 条源记录 → {number(data.meta.returnUnits)} 件退货</span><em>件数构成，不代表退货率</em>
+      </div>
+
+      <section className="kpi-grid">
+        <Kpi label="退货件数" value={number(total)} note={`占全产品 ${pct(total / data.meta.returnUnits)}`} tone="blue" />
+        <Kpi label="产品体验 / 技术问题" value={pct(issueCount / total)} note={`${number(issueCount)} 件涉及质量、故障、兼容或预期`} tone="orange" />
+        <Kpi label="Top 1 退货原因" value={reasons[0]?.label || "—"} note={`${number(reasons[0]?.count || 0)} 件 · ${pct(reasons[0]?.share || 0)}`} />
+        <Kpi label="具体留言覆盖" value={pct(commentCount / total)} note={`${number(commentCount)} 件包含客户留言`} tone="mint" />
+        <Kpi label="覆盖型号" value={number(scopeModels.length)} note={`全量共 ${data.meta.modelCount} 个型号/配件类别`} tone="purple" />
       </section>
 
-      <section className="report-section overview" id="overview">
-        <SectionHeading
-          index="01"
-          kicker="Executive readout"
-          title="先讲清楚三件事"
-          copy="一页读懂规模、问题性质和汇报边界。"
-        />
-        <div className="metric-grid">
-          <Metric value={formatNumber(data.scope.focusReturns)} label="两款合计退货件数" note={`占全部 ${formatNumber(data.scope.allReturns)} 件的 ${percent(data.scope.focusReturns / data.scope.allReturns)}`} tone="orange" />
-          <Metric value={formatNumber(data.products["Tiny 3"].count)} label="Tiny 3" note="两款中的主量级产品" />
-          <Metric value={formatNumber(data.products["Tiny 3 Lite"].count)} label="Tiny 3 Lite" note="样本较小，结构需谨慎解读" />
-          <Metric value={percent(data.scope.focusComments / data.scope.focusReturns)} label="具体留言覆盖" note={`${formatNumber(data.scope.focusComments)} 件有买家留言`} tone="mint" />
-        </div>
-        <ScopeRail />
-        <div className="insight-grid">
-          <article className="insight-card insight-primary">
-            <span>核心判断 01</span>
-            <h3>不是单一故障，而是“预期管理 + 技术体验”的组合问题</h3>
-            <p>Tiny 3 的产品体验/技术类原因占 58.7%，Tiny 3 Lite 为 60.2%；同时，“不想要/买错/场景不符”仍占据显著份额。</p>
-          </article>
-          <article className="insight-card">
-            <span>核心判断 02</span>
-            <h3>Tiny 3 更像规模化的质量与兼容问题</h3>
-            <p>质量未达期望、产品故障、不兼容位居前三；留言继续指向软件设置、设备识别、画质和连接链路。</p>
-          </article>
-          <article className="insight-card">
-            <span>核心判断 03</span>
-            <h3>Lite 更像版本选择与能力边界没有被充分理解</h3>
-            <p>“不再需要”和“产品故障”并列首位，兼容、功能场景、软件设置与音频共同构成退货触发点。</p>
-          </article>
-        </div>
-        <div className="product-profiles">
-          {PRODUCTS.map((product) => <ProductProfile product={product} key={product} />)}
-        </div>
+      <section className="main-grid">
+        <Panel title="产品退货规模与风险" subtitle="点击型号可直接下钻其退货原因" tag="产品维度" className="model-panel">
+          <ModelRanking models={familyModels} selectedModel={selectedModel} onSelect={selectModel} />
+        </Panel>
+        <Panel title={`${currentName} · 退货原因 TOP 8`} subtitle="占比以当前筛选的退货件数为分母" tag="核心原因" className="reason-panel">
+          <ReasonRanking reasons={reasons} color={currentColor} />
+        </Panel>
+        <Panel title="原因大类构成" subtitle="拆分产品、购买决策、履约与其他因素" className="group-panel">
+          <GroupDonut reasons={reasons} total={total} />
+        </Panel>
       </section>
 
-      <section className="report-section section-dark" id="reasons">
-        <SectionHeading
-          index="02"
-          kicker="Structured return reasons"
-          title="结构化原因：两款的共同点与差异"
-          copy="以各型号退货件数为分母。左右条形让差异在汇报现场一眼可见。"
-        />
-        <ComparisonBars />
-        <div className="speaker-note">
-          <strong>建议讲法</strong>
-          <p>
-            Tiny 3 的首要原因是“质量未达到期望”，而 Lite 的前三项更加均衡；这意味着 Tiny 3 优先做质量与兼容专项，Lite则要同步解决选型、功能边界与基础稳定性。
-          </p>
-        </div>
+      <section className="middle-grid">
+        <Panel title={`${currentName} · 月度退货件数`} subtitle="用于观察绝对规模变化；缺少销量分母，不能解释为退货率变化" className="trend-panel">
+          <TrendChart rows={monthly} color={currentColor} />
+        </Panel>
+        <Panel title="重点型号概览" subtitle="原始需求指定的五款重点产品；点击可下钻" tag="领导关注" className="focus-panel">
+          <FocusMatrix models={focusModels} onSelect={selectModel} />
+        </Panel>
       </section>
 
-      <section className="report-section" id="trend">
-        <SectionHeading
-          index="03"
-          kicker="Volume movement"
-          title="月度退货件数走势"
-          copy="用于识别规模变化，不用于评价退货率；7月是不完整月份。"
-        />
-        <TrendChart />
+      <Panel title="重点型号 × 核心原因热力图" subtitle="横向比较各型号的原因占比；颜色越深，型号内占比越高" className="heatmap-panel">
+        <ReasonHeatmap models={focusModels} />
+      </Panel>
+
+      <section className="bottom-grid">
+        <Panel title="管理动作建议" subtitle="由结构化原因、型号规模与留言证据综合判断" className="action-panel"><LeadershipActions /></Panel>
+        <Panel title={`${currentName} · 客户原声`} subtitle="匿名代表性留言，仅用于解释统计原因" tag="证据" className="voice-panel"><VoiceCards comments={comments} /></Panel>
       </section>
 
-      <section className="report-section section-tint" id="themes">
-        <SectionHeading
-          index="04"
-          kicker="Voice-of-customer themes"
-          title="差评留言到底在抱怨什么"
-          copy="主题来自原表中文标签、译文及多语言关键词；一条留言可命中多个主题，百分比不可相加。"
-        />
-        <ThemeExplorer />
-      </section>
-
-      <section className="report-section" id="evidence">
-        <SectionHeading
-          index="05"
-          kicker="Anonymous evidence"
-          title="代表性买家原声"
-          copy="已移除订单号、LPN等标识；优先展示中文译文，便于汇报和跨团队讨论。"
-        />
-        <CommentExplorer />
-      </section>
-
-      <section className="report-section section-dark" id="actions">
-        <SectionHeading
-          index="06"
-          kicker="Action plan"
-          title="从差评证据到行动优先级"
-          copy="建议按“减少误购—降低首次使用摩擦—修复关键体验”三条线并行推进。"
-        />
-        <ActionMatrix />
-        <div className="closing-grid">
-          <article>
-            <Eyebrow>30天内</Eyebrow>
-            <h3>信息与流程止损</h3>
-            <p>上线兼容矩阵、型号对比、5分钟上手指南；客服问诊增加系统、软件、接口与使用场景字段。</p>
-          </article>
-          <article>
-            <Eyebrow>60天内</Eyebrow>
-            <h3>软件与固件专项</h3>
-            <p>完成连接、识别、升级、异常缩放/跟踪、音画同步的跨平台回归，并建立复现样本库。</p>
-          </article>
-          <article>
-            <Eyebrow>90天内</Eyebrow>
-            <h3>体验指标闭环</h3>
-            <p>将退货原因与销量、批次、固件版本、站点关联，补齐真正的退货率与版本改善追踪。</p>
-          </article>
-        </div>
-      </section>
-
-      <footer>
-        <div>
-          <strong>Tiny 3 Series · Returns Intelligence</strong>
-          <span>数据范围 {data.scope.dateMin} — {data.scope.dateMax}</span>
-        </div>
-        <p>统计说明：四份报告合并去重。留言主题仅覆盖有具体留言记录，不等同于全量故障发生率。</p>
-      </footer>
+      <footer><span>数据范围：{data.meta.dateMin} — {data.meta.dateMax} · 去重 {number(data.meta.duplicatesRemoved)} 条重复记录</span><span>口径提醒：本看板展示退货件数与原因构成，未纳入销量/发货量分母</span></footer>
     </main>
   );
 }

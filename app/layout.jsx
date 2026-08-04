@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Tiny 3 系列退货差评分析",
-  description: "Tiny 3 与 Tiny 3 Lite 的 Amazon 全站点退货及差评原因汇报"
+  title: "OBSBOT 全型号退货原因管理看板",
+  description: "OBSBOT Amazon 全站点、全型号退货原因与客户反馈管理看板"
 };
 
 export default function RootLayout({ children }) {
