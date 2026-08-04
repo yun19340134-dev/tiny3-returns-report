@@ -54,6 +54,31 @@ function aggregateMonthly(models) {
     .sort((a, b) => a.month.localeCompare(b.month));
 }
 
+function aggregateDetailReasons(models) {
+  const denominator = models.reduce((sum, model) => sum + (model.detailCommentCount || 0), 0) || 1;
+  const map = new Map();
+  models.forEach((model) => {
+    (model.detailReasons || []).forEach((reason) => {
+      const current = map.get(reason.label) || {
+        label: reason.label,
+        parent: reason.parent,
+        symptom: reason.symptom,
+        action: reason.action,
+        count: 0,
+        examples: [],
+      };
+      current.count += reason.count;
+      reason.examples.forEach((example) => {
+        if (example && !current.examples.includes(example) && current.examples.length < 4) current.examples.push(example);
+      });
+      map.set(reason.label, current);
+    });
+  });
+  return Array.from(map.values())
+    .map((row) => ({ ...row, share: row.count / denominator }))
+    .sort((a, b) => b.count - a.count);
+}
+
 function FilterBar({ family, model, onFamilyChange, onModelChange, models }) {
   return (
     <div className="filter-bar">
@@ -155,6 +180,45 @@ function ReasonRanking({ reasons, color }) {
           <span>{number(row.count)}件</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+function DetailedReasonAnalysis({ rows, commentCount, classifiedCount, selectedLabel, onSelect, color }) {
+  const visible = rows.slice(0, 12);
+  const selected = rows.find((row) => row.label === selectedLabel) || visible[0];
+  const max = Math.max(...visible.map((row) => row.count), 1);
+  if (!selected) return <div className="detail-empty">当前筛选暂无可用于症状细分的具体留言。</div>;
+  return (
+    <div className="detail-analysis">
+      <div className="detail-summary">
+        <span>具体留言样本 <b>{number(commentCount)}</b> 件</span>
+        <span>成功识别具体问题 <b>{pct(classifiedCount / Math.max(commentCount, 1))}</b></span>
+        <em>一条留言可包含多个问题，细分占比不可相加</em>
+      </div>
+      <div className="detail-layout">
+        <div className="detail-ranking">
+          {visible.map((row, index) => (
+            <button type="button" className={selected.label === row.label ? "active" : ""} key={row.label} onClick={() => onSelect(row.label)}>
+              <span className="detail-rank">{String(index + 1).padStart(2, "0")}</span>
+              <span className="detail-name"><small>{row.parent}</small><b>{row.label}</b><i><u style={{ width: `${(row.count / max) * 100}%`, background: color }} /></i></span>
+              <strong>{pct(row.share)}</strong>
+              <em>{number(row.count)} 次</em>
+            </button>
+          ))}
+        </div>
+        <article className="detail-evidence">
+          <div className="detail-evidence-title"><span>{selected.parent}</span><h3>{selected.label}</h3><strong>{number(selected.count)} 次提及 · {pct(selected.share)} 留言覆盖</strong></div>
+          <div className="detail-diagnosis">
+            <div><small>客户具体表现</small><p>{selected.symptom}</p></div>
+            <div><small>建议动作</small><p>{selected.action}</p></div>
+          </div>
+          <div className="detail-quotes">
+            <small>代表性原声</small>
+            {selected.examples.slice(0, 3).map((example, index) => <blockquote key={`${selected.label}-${index}`}>“{example}”</blockquote>)}
+          </div>
+        </article>
+      </div>
     </div>
   );
 }
@@ -384,14 +448,18 @@ export default function Page() {
   const [family, setFamily] = useState("全部");
   const [selectedModel, setSelectedModel] = useState("ALL");
   const [ratingSite, setRatingSite] = useState("DE");
+  const [selectedDetail, setSelectedDetail] = useState("");
 
   const familyModels = useMemo(() => data.models.filter((model) => family === "全部" || model.family === family), [family]);
   const scopeModels = useMemo(() => selectedModel === "ALL" ? familyModels : data.models.filter((model) => model.name === selectedModel), [familyModels, selectedModel]);
   const reasons = useMemo(() => aggregateReasons(scopeModels), [scopeModels]);
   const monthly = useMemo(() => aggregateMonthly(scopeModels), [scopeModels]);
+  const detailReasons = useMemo(() => aggregateDetailReasons(scopeModels), [scopeModels]);
   const total = scopeModels.reduce((sum, model) => sum + model.count, 0);
   const issueCount = scopeModels.reduce((sum, model) => sum + model.productIssueCount, 0);
   const commentCount = scopeModels.reduce((sum, model) => sum + model.commentCount, 0);
+  const detailCommentCount = scopeModels.reduce((sum, model) => sum + (model.detailCommentCount || 0), 0);
+  const detailClassifiedCount = scopeModels.reduce((sum, model) => sum + (model.detailClassifiedCount || 0), 0);
   const currentName = selectedModel === "ALL" ? (family === "全部" ? "全产品" : family) : selectedModel;
   const currentColor = selectedModel === "ALL" ? (family === "全部" ? "#ff6846" : FAMILY_COLORS[family]) : FAMILY_COLORS[scopeModels[0]?.family] || "#ff6846";
   const focusModels = data.focusModels.map((name) => data.models.find((model) => model.name === name)).filter(Boolean);
@@ -448,6 +516,17 @@ export default function Page() {
           <GroupDonut reasons={reasons} total={total} />
         </Panel>
       </section>
+
+      <Panel title={`${currentName} · 具体退货问题细分`} subtitle="从客户留言继续拆到可行动的具体症状；点击左侧问题查看表现、建议与原声证据" tag="二级 / 三级原因" className="detail-panel">
+        <DetailedReasonAnalysis
+          rows={detailReasons}
+          commentCount={detailCommentCount}
+          classifiedCount={detailClassifiedCount}
+          selectedLabel={selectedDetail}
+          onSelect={setSelectedDetail}
+          color={currentColor}
+        />
+      </Panel>
 
       <section className="middle-grid">
         <Panel title={`${currentName} · 月度退货件数`} subtitle="用于观察绝对规模变化；缺少销量分母，不能解释为退货率变化" className="trend-panel">
