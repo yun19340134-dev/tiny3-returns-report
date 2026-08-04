@@ -19,6 +19,11 @@ const GROUP_COLORS = {
   "其他 / 未说明": "#7d8798",
 };
 const FAMILY_OPTIONS = ["全部", "Tiny 系列", "Meet 系列", "Tail 系列", "其他产品", "配件"];
+const SERIES_FOCUS = {
+  "Tiny 系列": ["Tiny 3", "Tiny 3 Lite"],
+  "Meet 系列": ["Meet 2", "Meet SE"],
+};
+const COMPARE_COLORS = ["#ff6846", "#2d7ff9"];
 
 const number = (value) => new Intl.NumberFormat("zh-CN").format(Math.round(value));
 const pct = (value, digits = 1) => `${(value * 100).toFixed(digits)}%`;
@@ -218,6 +223,81 @@ function DetailedReasonAnalysis({ rows, commentCount, classifiedCount, selectedL
             {selected.examples.slice(0, 3).map((example, index) => <blockquote key={`${selected.label}-${index}`}>“{example}”</blockquote>)}
           </div>
         </article>
+      </div>
+    </div>
+  );
+}
+
+function comparisonRows(models, field, limit = 6, excludeParents = []) {
+  const labels = new Map();
+  models.forEach((model) => {
+    (model[field] || []).forEach((row) => {
+      if (excludeParents.includes(row.parent)) return;
+      labels.set(row.label, (labels.get(row.label) || 0) + row.count);
+    });
+  });
+  return Array.from(labels.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([label]) => ({
+      label,
+      parent: models.flatMap((model) => model[field] || []).find((row) => row.label === label)?.parent,
+      values: models.map((model) => {
+        const row = (model[field] || []).find((item) => item.label === label);
+        return field === "reasons" ? (row?.share || 0) : (row?.shareOfComments || 0);
+      }),
+    }));
+}
+
+function largestGap(rows, modelIndex) {
+  const top = [...rows].sort((a, b) => ((b.values[modelIndex] - b.values[1 - modelIndex]) - (a.values[modelIndex] - a.values[1 - modelIndex])))[0];
+  return top && top.values[modelIndex] > top.values[1 - modelIndex] ? top : null;
+}
+
+function SeriesFocusAnalysis({ models, onSelect }) {
+  const reasonRows = comparisonRows(models, "reasons", 6);
+  const detailRows = comparisonRows(models, "detailReasons", 7, ["购买决策"]);
+  const volumeLeader = models[0].count >= models[1].count ? models[0] : models[1];
+  const riskLeader = models[0].productIssueShare >= models[1].productIssueShare ? models[0] : models[1];
+  const gaps = models.map((_, index) => largestGap(detailRows, index));
+  return (
+    <div className="series-focus">
+      <div className="focus-product-cards">
+        {models.map((model, index) => (
+          <button type="button" key={model.name} onClick={() => onSelect(model.name)} style={{ "--compare-color": COMPARE_COLORS[index] }}>
+            <div><span>重点产品 {index + 1}</span><h3>{model.name}</h3><em>点击下钻单品</em></div>
+            <dl><div><dt>退货件数</dt><dd>{number(model.count)}</dd></div><div><dt>技术问题</dt><dd className={model.productIssueShare >= 0.6 ? "risk-high" : ""}>{pct(model.productIssueShare)}</dd></div><div><dt>留言覆盖</dt><dd>{pct(model.commentCoverage)}</dd></div></dl>
+          </button>
+        ))}
+      </div>
+      <div className="series-compare-grid">
+        <div className="compare-block">
+          <div className="compare-title"><div><h3>结构化退货原因差异</h3><p>占各型号全部退货件数</p></div><div className="compare-legend">{models.map((model, index) => <span key={model.name}><i style={{ background: COMPARE_COLORS[index] }} />{model.name}</span>)}</div></div>
+          <div className="compare-rows">
+            {reasonRows.map((row) => (
+              <div className="compare-row" key={row.label}>
+                <span>{row.label}</span>
+                <div>{row.values.map((value, index) => <i key={`${row.label}-${models[index].name}`}><u style={{ width: `${Math.min(value / 0.3, 1) * 100}%`, background: COMPARE_COLORS[index] }} /><b>{pct(value)}</b></i>)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="compare-block">
+          <div className="compare-title"><div><h3>具体问题差异</h3><p>占各型号有留言退货件数；已排除纯购买决策</p></div></div>
+          <div className="compare-rows">
+            {detailRows.map((row) => (
+              <div className="compare-row" key={row.label}>
+                <span><small>{row.parent}</small>{row.label}</span>
+                <div>{row.values.map((value, index) => <i key={`${row.label}-${models[index].name}`}><u style={{ width: `${Math.min(value / 0.3, 1) * 100}%`, background: COMPARE_COLORS[index] }} /><b>{pct(value)}</b></i>)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="series-findings">
+        <article><span>规模</span><p><b>{volumeLeader.name}</b> 的退货件数更高；该指标是绝对件数，仍需结合销量判断真实退货风险。</p></article>
+        <article><span>风险</span><p><b>{riskLeader.name}</b> 的产品体验/技术问题占比更高，为 {pct(riskLeader.productIssueShare)}。</p></article>
+        {models.map((model, index) => <article key={model.name}><span style={{ background: COMPARE_COLORS[index] }}>{model.name}</span><p>相对另一款更突出的具体问题是 <b>{gaps[index]?.label || "暂无明显差异"}</b>{gaps[index] ? `（高 ${pct(Math.max(gaps[index].values[index] - gaps[index].values[1 - index], 0))}）` : ""}。</p></article>)}
       </div>
     </div>
   );
@@ -463,6 +543,7 @@ export default function Page() {
   const currentName = selectedModel === "ALL" ? (family === "全部" ? "全产品" : family) : selectedModel;
   const currentColor = selectedModel === "ALL" ? (family === "全部" ? "#ff6846" : FAMILY_COLORS[family]) : FAMILY_COLORS[scopeModels[0]?.family] || "#ff6846";
   const focusModels = data.focusModels.map((name) => data.models.find((model) => model.name === name)).filter(Boolean);
+  const seriesFocusModels = (SERIES_FOCUS[family] || []).map((name) => data.models.find((model) => model.name === name)).filter(Boolean);
   const comments = scopeModels
     .flatMap((model) => model.comments.map((comment) => ({ ...comment, product: model.name })))
     .sort((a, b) => {
@@ -494,6 +575,12 @@ export default function Page() {
         <Kpi label="具体留言覆盖" value={pct(commentCount / total)} note={`${number(commentCount)} 件包含客户留言`} tone="mint" />
         <Kpi label="覆盖型号" value={number(scopeModels.length)} note={`全量共 ${data.meta.modelCount} 个型号/配件类别`} tone="purple" />
       </section>
+
+      {seriesFocusModels.length === 2 && (
+        <Panel title={`${family} · 重点产品加强分析`} subtitle={`${seriesFocusModels[0].name} vs ${seriesFocusModels[1].name}：从规模、结构化原因和客户具体问题三层对比`} tag="系列专项" className="series-focus-panel">
+          <SeriesFocusAnalysis models={seriesFocusModels} onSelect={selectModel} />
+        </Panel>
+      )}
 
       <section className="rating-grid">
         <Panel title="欧洲站点星级对比" subtitle="同型号多颜色/ASIN时展示截图中评论数最多的主 Listing；点击型号可下钻退货原因" tag={`快照 ${ratings.snapshotDate}`} className="rating-matrix-panel">
