@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import baseData from "../data/dashboard-data.json";
 import meetFlip from "../data/meet-flip-data.json";
-import ratings from "../data/ratings-data.json";
+import obsbotLogo from "../public/obsbot-logo.png";
 
 const data = {
   ...baseData,
@@ -452,107 +453,6 @@ function ReviewVoiceCards({ comments }) {
   );
 }
 
-const reviewCount = (value) => {
-  if (value === null || value === undefined) return "—";
-  if (value >= 1000) {
-    const scaled = value / 1000;
-    return `${Number.isInteger(scaled) ? scaled.toFixed(0) : scaled.toFixed(1)}k`;
-  }
-  return number(value);
-};
-
-const ratingTone = (value) => {
-  if (value === null || value === undefined) return "unavailable";
-  if (value < 4.3) return "low";
-  if (value < 4.5) return "watch";
-  return "healthy";
-};
-
-function primaryListing(model, site) {
-  const candidates = ratings.listings.filter(
-    (listing) => listing.model === model && listing.site === site
-  );
-  const available = candidates
-    .filter((listing) => listing.rating !== null)
-    .sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
-  return available[0] || candidates[0] || null;
-}
-
-function RatingCell({ listing }) {
-  if (!listing || listing.rating === null) {
-    return <div className="rating-cell unavailable"><strong>—</strong><span>暂无星级</span></div>;
-  }
-  return (
-    <div className={`rating-cell ${ratingTone(listing.rating)}`} title={`${listing.variant} · ${listing.asin}`}>
-      <strong><i>★</i>{listing.rating.toFixed(1)}</strong>
-      <span>{reviewCount(listing.reviews)} 条评论</span>
-    </div>
-  );
-}
-
-function RatingMatrix({ onSelect }) {
-  const models = ratings.modelOrder.filter((model) => !model.startsWith("配件-"));
-  return (
-    <div className="rating-matrix">
-      <div className="rating-row rating-head">
-        <span>产品型号</span>
-        {ratings.sites.map((site) => <span key={site.id}>{site.name}<small>{site.marketplace}</small></span>)}
-      </div>
-      {models.map((model) => {
-        const canSelect = data.models.some((item) => item.name === model);
-        return (
-          <button
-            type="button"
-            className={`rating-row ${canSelect ? "clickable" : ""}`}
-            key={model}
-            onClick={() => canSelect && onSelect(model)}
-          >
-            <span><b>{model}</b>{data.focusModels.includes(model) && <em>重点</em>}</span>
-            {ratings.sites.map((site) => <RatingCell key={site.id} listing={primaryListing(model, site.id)} />)}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function SiteListingDetails({ site, onSiteChange }) {
-  const rows = ratings.listings
-    .filter((listing) => listing.site === site)
-    .sort((a, b) => {
-      if (a.rating === null) return 1;
-      if (b.rating === null) return -1;
-      return a.rating - b.rating || (b.reviews || 0) - (a.reviews || 0);
-    });
-  const lowCount = rows.filter((row) => row.rating !== null && row.rating < 4.3).length;
-  return (
-    <div className="site-listings">
-      <div className="site-tabs">
-        {ratings.sites.map((item) => (
-          <button type="button" className={site === item.id ? "active" : ""} key={item.id} onClick={() => onSiteChange(item.id)}>
-            {item.name}
-          </button>
-        ))}
-      </div>
-      <div className="rating-summary">
-        <span>可见 Listing <b>{rows.length}</b></span>
-        <span>低于 4.3 星 <b className={lowCount ? "rating-alert" : ""}>{lowCount}</b></span>
-      </div>
-      <div className="listing-scroll">
-        {rows.map((row) => (
-          <div className="listing-row" key={`${row.site}-${row.asin}`}>
-            <div><b>{row.model}</b><span>{row.variant} · {row.asin}</span></div>
-            <div className={ratingTone(row.rating)}>
-              <strong>{row.rating === null ? "—" : `★ ${row.rating.toFixed(1)}`}</strong>
-              <span>{row.reviews === null ? "暂无评论" : `${reviewCount(row.reviews)} 评论`}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function LeadershipActions() {
   const actions = [
     ["P0", "兼容与场景边界前置", "不兼容、与描述不符和误购合计占比较高；Listing首屏应明确接口、系统、软件与典型场景边界。"],
@@ -565,7 +465,6 @@ function LeadershipActions() {
 export default function Page() {
   const [family, setFamily] = useState("全部");
   const [selectedModel, setSelectedModel] = useState("ALL");
-  const [ratingSite, setRatingSite] = useState("DE");
   const [selectedDetail, setSelectedDetail] = useState("");
 
   const familyModels = useMemo(() => data.models.filter((model) => family === "全部" || model.family === family), [family]);
@@ -597,7 +496,7 @@ export default function Page() {
   return (
     <main className="dashboard-shell">
       <header className="dashboard-header">
-        <div className="title-block"><div className="brand-mark">OB</div><div><p>Amazon Customer Return · 2026 YTD</p><h1>OBSBOT 全型号退货原因管理看板</h1></div></div>
+        <div className="title-block"><div className="brand-logo"><Image src={obsbotLogo} alt="OBSBOT Logo" priority /></div><div><p>Amazon Customer Return · 2026 YTD</p><h1>OBSBOT 全型号退货原因管理看板</h1></div></div>
         <div className="header-meta"><span>数据更新至 {data.meta.dateMax}</span><button type="button" onClick={() => window.print()}>导出 PDF</button></div>
       </header>
 
@@ -620,16 +519,6 @@ export default function Page() {
           <SeriesFocusAnalysis models={seriesFocusModels} onSelect={selectModel} />
         </Panel>
       )}
-
-      <section className="rating-grid">
-        <Panel title="欧洲站点星级对比" subtitle="同型号多颜色/ASIN时展示截图中评论数最多的主 Listing；点击型号可下钻退货原因" tag={`快照 ${ratings.snapshotDate}`} className="rating-matrix-panel">
-          <RatingMatrix onSelect={selectModel} />
-          <div className="rating-legend"><span className="healthy">≥ 4.5 健康</span><span className="watch">4.3–4.4 关注</span><span className="low">＜ 4.3 预警</span><small>“—”表示截图未显示或星级不可用</small></div>
-        </Panel>
-        <Panel title="站点 Listing 明细" subtitle="保留颜色/版本、ASIN、星级与评论数；按低星级优先排列" tag="截图可见范围" className="listing-panel">
-          <SiteListingDetails site={ratingSite} onSiteChange={setRatingSite} />
-        </Panel>
-      </section>
 
       <section className="main-grid">
         <Panel title="产品退货规模与风险" subtitle="点击型号可直接下钻其退货原因" tag="产品维度" className="model-panel">
