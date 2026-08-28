@@ -1,8 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import data from "../data/dashboard-data.json";
+import baseData from "../data/dashboard-data.json";
+import meetFlip from "../data/meet-flip-data.json";
 import ratings from "../data/ratings-data.json";
+
+const data = {
+  ...baseData,
+  meta: {
+    ...baseData.meta,
+    rawRows: baseData.meta.rawRows + meetFlip.metaDelta.rawRows,
+    returnEvents: baseData.meta.returnEvents + meetFlip.metaDelta.returnEvents,
+    returnUnits: baseData.meta.returnUnits + meetFlip.metaDelta.returnUnits,
+    modelCount: baseData.meta.modelCount + meetFlip.metaDelta.modelCount,
+    commentCount: baseData.meta.commentCount + meetFlip.metaDelta.commentCount,
+    commentCoverage: (baseData.meta.commentCount + meetFlip.metaDelta.commentCount) / (baseData.meta.returnUnits + meetFlip.metaDelta.returnUnits),
+    focusUnits: baseData.meta.focusUnits + meetFlip.metaDelta.focusUnits,
+    productIssueCount: baseData.meta.productIssueCount + meetFlip.metaDelta.productIssueCount,
+    dateMax: meetFlip.metaDelta.dateMax,
+  },
+  focusModels: [...baseData.focusModels, "Meet Flip"],
+  models: [...baseData.models, meetFlip.model],
+  sources: [...baseData.sources, { source: "Meet Flip补充", file: "退货(FBA)订单导出-退货报告2026.1-8.27.xlsx + amazon_review2026.1-20260828.xlsx", rows: meetFlip.metaDelta.rawRows, dateMin: "2026-08-19", dateMax: meetFlip.metaDelta.dateMax, comments: meetFlip.metaDelta.commentCount, translatedComments: meetFlip.metaDelta.commentCount }],
+};
 
 const FAMILY_COLORS = {
   "Tiny 系列": "#ff6846",
@@ -21,9 +41,9 @@ const GROUP_COLORS = {
 const FAMILY_OPTIONS = ["全部", "Tiny 系列", "Meet 系列", "Tail 系列", "其他产品", "配件"];
 const SERIES_FOCUS = {
   "Tiny 系列": ["Tiny 3", "Tiny 3 Lite"],
-  "Meet 系列": ["Meet 2", "Meet SE"],
+  "Meet 系列": ["Meet 2", "Meet SE", "Meet Flip"],
 };
-const COMPARE_COLORS = ["#ff6846", "#2d7ff9"];
+const COMPARE_COLORS = ["#ff6846", "#2d7ff9", "#8a68e8"];
 
 const number = (value) => new Intl.NumberFormat("zh-CN").format(Math.round(value));
 const pct = (value, digits = 1) => `${(value * 100).toFixed(digits)}%`;
@@ -250,15 +270,16 @@ function comparisonRows(models, field, limit = 6, excludeParents = []) {
 }
 
 function largestGap(rows, modelIndex) {
-  const top = [...rows].sort((a, b) => ((b.values[modelIndex] - b.values[1 - modelIndex]) - (a.values[modelIndex] - a.values[1 - modelIndex])))[0];
-  return top && top.values[modelIndex] > top.values[1 - modelIndex] ? top : null;
+  const difference = (row) => row.values[modelIndex] - Math.max(...row.values.filter((_, index) => index !== modelIndex), 0);
+  const top = [...rows].sort((a, b) => difference(b) - difference(a))[0];
+  return top && difference(top) > 0 ? { ...top, gap: difference(top) } : null;
 }
 
 function SeriesFocusAnalysis({ models, onSelect }) {
   const reasonRows = comparisonRows(models, "reasons", 6);
   const detailRows = comparisonRows(models, "detailReasons", 7, ["购买决策"]);
-  const volumeLeader = models[0].count >= models[1].count ? models[0] : models[1];
-  const riskLeader = models[0].productIssueShare >= models[1].productIssueShare ? models[0] : models[1];
+  const volumeLeader = [...models].sort((a, b) => b.count - a.count)[0];
+  const riskLeader = [...models].sort((a, b) => b.productIssueShare - a.productIssueShare)[0];
   const gaps = models.map((_, index) => largestGap(detailRows, index));
   return (
     <div className="series-focus">
@@ -296,8 +317,8 @@ function SeriesFocusAnalysis({ models, onSelect }) {
       </div>
       <div className="series-findings">
         <article><span>规模</span><p><b>{volumeLeader.name}</b> 的退货件数更高；该指标是绝对件数，仍需结合销量判断真实退货风险。</p></article>
-        <article><span>风险</span><p><b>{riskLeader.name}</b> 的产品体验/技术问题占比更高，为 {pct(riskLeader.productIssueShare)}。</p></article>
-        {models.map((model, index) => <article key={model.name}><span style={{ background: COMPARE_COLORS[index] }}>{model.name}</span><p>相对另一款更突出的具体问题是 <b>{gaps[index]?.label || "暂无明显差异"}</b>{gaps[index] ? `（高 ${pct(Math.max(gaps[index].values[index] - gaps[index].values[1 - index], 0))}）` : ""}。</p></article>)}
+        <article><span>风险</span><p><b>{riskLeader.name}</b> 的产品体验/技术问题占比更高，为 {pct(riskLeader.productIssueShare)}。{riskLeader.count < 50 ? ` 当前仅${riskLeader.count}件样本，需谨慎解读。` : ""}</p></article>
+        {models.map((model, index) => <article key={model.name}><span style={{ background: COMPARE_COLORS[index] }}>{model.name}</span><p>相对系列内其他型号更突出的具体问题是 <b>{gaps[index]?.label || "暂无明显差异"}</b>{gaps[index] ? `（高 ${pct(gaps[index].gap)}）` : ""}。</p></article>)}
       </div>
     </div>
   );
@@ -405,9 +426,26 @@ function VoiceCards({ comments }) {
     <div className="voice-list">
       {comments.slice(0, 3).map((comment, index) => (
         <article key={`${comment.product}-${comment.date}-${index}`}>
-          <div><span>{comment.product}</span><em>{comment.reason}</em><time>{comment.date}</time></div>
+          <div><span>{comment.product}</span><em>{comment.reason}</em><time>{comment.country ? `${comment.country} · ` : ""}{comment.date}</time></div>
           <blockquote>“{comment.text}”</blockquote>
+          {comment.translation && comment.translation !== comment.text && <p className="voice-translation"><b>中文：</b>{comment.translation}</p>}
           <p>{comment.themes.slice(0, 2).join(" · ") || "其他具体反馈"}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ReviewVoiceCards({ comments }) {
+  return (
+    <div className="review-voice-list">
+      {comments.map((comment) => (
+        <article key={comment.id}>
+          <div className="review-voice-head"><span>{comment.product}</span><em>{comment.country}</em><b>{comment.rating ? `${comment.rating.toFixed(1)}★` : "—"}</b></div>
+          <h3>{comment.title}</h3>
+          <blockquote>“{comment.text}”</blockquote>
+          <p><b>中文摘要：</b>{comment.translation}</p>
+          <small>{comment.source} · {comment.period}</small>
         </article>
       ))}
     </div>
@@ -551,6 +589,7 @@ export default function Page() {
       const bChinese = /[\u4e00-\u9fff]/.test(b.text) ? 1 : 0;
       return bChinese - aChinese || b.date.localeCompare(a.date);
     });
+  const reviewComments = scopeModels.flatMap((model) => (model.reviewComments || []).map((comment) => ({ ...comment, product: model.name })));
 
   const changeFamily = (nextFamily) => { setFamily(nextFamily); setSelectedModel("ALL"); };
   const selectModel = (name) => { const item = data.models.find((model) => model.name === name); if (item) setFamily(item.family); setSelectedModel(name); };
@@ -565,7 +604,7 @@ export default function Page() {
       <FilterBar family={family} model={selectedModel} onFamilyChange={changeFamily} onModelChange={setSelectedModel} models={familyModels} />
 
       <div className="scope-strip">
-        <strong>当前视图：{currentName}</strong><span>{scopeModels.length} 个型号</span><span>4份报告合并去重</span><span>{number(data.meta.rawRows)} 条源记录 → {number(data.meta.returnUnits)} 件退货</span><em>件数构成，不代表退货率</em>
+        <strong>当前视图：{currentName}</strong><span>{scopeModels.length} 个型号</span><span>4份历史报告 + Meet Flip补充</span><span>{number(data.meta.rawRows)} 条源记录 → {number(data.meta.returnUnits)} 件退货</span><em>件数构成，不代表退货率</em>
       </div>
 
       <section className="kpi-grid">
@@ -576,8 +615,8 @@ export default function Page() {
         <Kpi label="覆盖型号" value={number(scopeModels.length)} note={`全量共 ${data.meta.modelCount} 个型号/配件类别`} tone="purple" />
       </section>
 
-      {seriesFocusModels.length === 2 && (
-        <Panel title={`${family} · 重点产品加强分析`} subtitle={`${seriesFocusModels[0].name} vs ${seriesFocusModels[1].name}：从规模、结构化原因和客户具体问题三层对比`} tag="系列专项" className="series-focus-panel">
+      {seriesFocusModels.length >= 2 && (
+        <Panel title={`${family} · 重点产品加强分析`} subtitle={`${seriesFocusModels.map((model) => model.name).join(" vs ")}：从规模、结构化原因和客户具体问题三层对比`} tag="系列专项" className="series-focus-panel">
           <SeriesFocusAnalysis models={seriesFocusModels} onSelect={selectModel} />
         </Panel>
       )}
@@ -619,7 +658,7 @@ export default function Page() {
         <Panel title={`${currentName} · 月度退货件数`} subtitle="用于观察绝对规模变化；缺少销量分母，不能解释为退货率变化" className="trend-panel">
           <TrendChart rows={monthly} color={currentColor} />
         </Panel>
-        <Panel title="重点型号概览" subtitle="原始需求指定的五款重点产品；点击可下钻" tag="领导关注" className="focus-panel">
+        <Panel title="重点型号概览" subtitle="六款重点产品；点击可下钻" tag="领导关注" className="focus-panel">
           <FocusMatrix models={focusModels} onSelect={selectModel} />
         </Panel>
       </section>
@@ -632,6 +671,13 @@ export default function Page() {
         <Panel title="管理动作建议" subtitle="由结构化原因、型号规模与留言证据综合判断" className="action-panel"><LeadershipActions /></Panel>
         <Panel title={`${currentName} · 客户原声`} subtitle="匿名代表性留言，仅用于解释统计原因" tag="证据" className="voice-panel"><VoiceCards comments={comments} /></Panel>
       </section>
+
+      {(family === "Meet 系列" || selectedModel === "Meet Flip") && reviewComments.length > 0 && (
+        <Panel title={`${currentName} · Amazon Review 评论分析`} subtitle="与FBA退货买家备注分开统计；保留真实原文并提供中文摘要" tag={`${reviewComments.length}条公开评论`} className="review-voice-panel">
+          <div className="supplement-note">{meetFlip.sourceNote}</div>
+          <ReviewVoiceCards comments={reviewComments} />
+        </Panel>
+      )}
 
       <footer><span>数据范围：{data.meta.dateMin} — {data.meta.dateMax} · 去重 {number(data.meta.duplicatesRemoved)} 条重复记录</span><span>口径提醒：本看板展示退货件数与原因构成，未纳入销量/发货量分母</span></footer>
     </main>
