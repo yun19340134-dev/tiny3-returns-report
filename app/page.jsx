@@ -44,7 +44,8 @@ const SERIES_FOCUS = {
   "Tiny 系列": ["Tiny 3", "Tiny 3 Lite"],
   "Meet 系列": ["Meet 2", "Meet SE", "Meet Flip"],
 };
-const COMPARE_COLORS = ["#ff6846", "#2d7ff9", "#8a68e8"];
+const COMPARE_COLORS = ["#ff6846", "#2d7ff9", "#8a68e8", "#16b99a", "#e9a93a"];
+const DEFAULT_COMPARE_MODELS = ["Tiny 3", "Tiny 3 Lite", "Meet 2", "Meet SE"];
 
 const number = (value) => new Intl.NumberFormat("zh-CN").format(Math.round(value));
 const pct = (value, digits = 1) => `${(value * 100).toFixed(digits)}%`;
@@ -193,19 +194,63 @@ function ModelRanking({ models, selectedModel, onSelect }) {
   );
 }
 
-function ReasonRanking({ reasons, color }) {
+function ReasonRanking({ reasons, color, selectedLabel, onSelect }) {
   const max = Math.max(...reasons.slice(0, 8).map((row) => row.share), 0.01);
+  const activeLabel = reasons.some((row) => row.label === selectedLabel) ? selectedLabel : reasons[0]?.label;
   return (
     <div className="reason-ranking">
       {reasons.slice(0, 8).map((row, index) => (
-        <div className="reason-row" key={row.label}>
+        <button type="button" className={`reason-row ${activeLabel === row.label ? "active" : ""}`} key={row.label} onClick={() => onSelect(row.label)}>
           <span className="reason-index">{index + 1}</span>
           <div className="reason-label"><b>{row.label}</b><small>{row.group}</small></div>
           <div className="reason-track"><i style={{ width: `${(row.share / max) * 100}%`, background: color }} /></div>
           <strong>{pct(row.share)}</strong>
           <span>{number(row.count)}件</span>
-        </div>
+        </button>
       ))}
+    </div>
+  );
+}
+
+function CoreReasonBreakdown({ reasons, models, selectedLabel, onSelectModel, color }) {
+  const selected = reasons.find((row) => row.label === selectedLabel) || reasons[0];
+  if (!selected) return <div className="detail-empty">当前筛选暂无退货原因数据。</div>;
+  const rows = models
+    .map((model) => {
+      const reason = model.reasons.find((row) => row.label === selected.label);
+      return { model, count: reason?.count || 0, internalShare: reason?.share || 0 };
+    })
+    .filter((row) => row.count > 0)
+    .sort((a, b) => b.count - a.count);
+  const max = Math.max(...rows.map((row) => row.count), 1);
+  const samples = models
+    .flatMap((model) => model.comments.filter((comment) => comment.reason === selected.label).map((comment) => ({ ...comment, product: model.name })))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3);
+  return (
+    <div className="core-drilldown">
+      <div className="core-drill-summary">
+        <div><span>当前核心原因</span><h3>{selected.label}</h3><p>{selected.group}</p></div>
+        <dl><div><dt>涉及退货</dt><dd>{number(selected.count)} 件</dd></div><div><dt>当前范围占比</dt><dd>{pct(selected.share)}</dd></div><div><dt>涉及型号</dt><dd>{rows.length} 个</dd></div></dl>
+      </div>
+      <div className="core-drill-grid">
+        <div className="contribution-list">
+          <div className="contribution-head"><span>产品贡献</span><span>该原因件数 / 产品内部占比</span></div>
+          {rows.slice(0, 10).map((row) => (
+            <button type="button" key={row.model.name} onClick={() => onSelectModel(row.model.name)}>
+              <span><b>{row.model.name}</b><small>{row.model.family}</small></span>
+              <i><u style={{ width: `${(row.count / max) * 100}%`, background: color }} /></i>
+              <strong>{number(row.count)}件</strong><em>{pct(row.internalShare)}</em>
+            </button>
+          ))}
+        </div>
+        <div className="core-samples">
+          <div className="contribution-head"><span>该原因下的真实客户原声</span><span>按最近日期</span></div>
+          {samples.length ? samples.map((sample, index) => (
+            <article key={`${sample.product}-${sample.date}-${index}`}><div><b>{sample.product}</b><time>{sample.date}</time></div><blockquote>“{sample.text}”</blockquote><small>{sample.themes.slice(0, 2).join(" · ") || "其他具体反馈"}</small></article>
+          )) : <div className="detail-empty">该原因暂无可展示的客户留言。</div>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -453,6 +498,86 @@ function ReviewVoiceCards({ comments }) {
   );
 }
 
+function CompareTrend({ models }) {
+  const months = Array.from(new Set(models.flatMap((model) => model.monthly.map((row) => row.month)))).sort();
+  const width = 760;
+  const height = 220;
+  const pad = { left: 42, right: 18, top: 18, bottom: 35 };
+  const value = (model, month) => model.monthly.find((row) => row.month === month)?.count || 0;
+  const maxValue = Math.max(...models.flatMap((model) => months.map((month) => value(model, month))), 1);
+  const chartMax = Math.ceil(maxValue / 50) * 50 || 50;
+  const x = (index) => pad.left + (index * (width - pad.left - pad.right)) / Math.max(months.length - 1, 1);
+  const y = (count) => pad.top + (1 - count / chartMax) * (height - pad.top - pad.bottom);
+  return (
+    <div className="compare-trend">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="多产品月度退货件数趋势">
+        {[0, .5, 1].map((ratio) => { const tick = Math.round(chartMax * ratio); return <g key={ratio}><line x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} /><text x={pad.left - 8} y={y(tick) + 4} textAnchor="end">{number(tick)}</text></g>; })}
+        {models.map((model, modelIndex) => {
+          const points = months.map((month, index) => `${x(index)},${y(value(model, month))}`).join(" ");
+          return <polyline key={model.name} points={points} fill="none" stroke={COMPARE_COLORS[modelIndex]} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />;
+        })}
+        {months.map((month, index) => <text key={month} x={x(index)} y={height - 10} textAnchor="middle">{month.slice(5)}月</text>)}
+      </svg>
+      <div className="compare-trend-legend">{models.map((model, index) => <span key={model.name}><i style={{ background: COMPARE_COLORS[index] }} />{model.name}</span>)}</div>
+    </div>
+  );
+}
+
+function ProductCompareDashboard({ models, onSelect }) {
+  const availableDefaults = DEFAULT_COMPARE_MODELS.filter((name) => models.some((model) => model.name === name));
+  const [selectedNames, setSelectedNames] = useState(availableDefaults.slice(0, 5));
+  const [familyFilter, setFamilyFilter] = useState("全部");
+  const [mode, setMode] = useState("share");
+  const selectedModels = selectedNames.map((name) => models.find((model) => model.name === name)).filter(Boolean);
+  const visibleModels = models.filter((model) => familyFilter === "全部" || model.family === familyFilter);
+  const reasonLabels = aggregateReasons(selectedModels).slice(0, 8).map((row) => row.label);
+  const reasonValue = (model, label) => {
+    const row = model.reasons.find((reason) => reason.label === label);
+    return mode === "count" ? (row?.count || 0) : (row?.share || 0);
+  };
+  const maxHeat = Math.max(...selectedModels.flatMap((model) => reasonLabels.map((label) => reasonValue(model, label))), 0.01);
+  const comparisonTotal = selectedModels.reduce((sum, model) => sum + model.count, 0) || 1;
+  const volumeLeader = [...selectedModels].sort((a, b) => b.count - a.count)[0];
+  const riskLeader = [...selectedModels].sort((a, b) => b.productIssueShare - a.productIssueShare)[0];
+  const coverageLeader = [...selectedModels].sort((a, b) => b.commentCoverage - a.commentCoverage)[0];
+
+  const setPreset = (names) => setSelectedNames(names.filter((name) => models.some((model) => model.name === name)).slice(0, 5));
+  const toggleModel = (name) => {
+    if (selectedNames.includes(name)) {
+      if (selectedNames.length > 2) setSelectedNames(selectedNames.filter((item) => item !== name));
+      return;
+    }
+    if (selectedNames.length < 5) setSelectedNames([...selectedNames, name]);
+  };
+
+  return (
+    <div className="product-compare">
+      <div className="compare-controls">
+        <div className="compare-presets"><span>快速组合</span><button type="button" onClick={() => setPreset(DEFAULT_COMPARE_MODELS)}>重点产品</button><button type="button" onClick={() => setPreset(SERIES_FOCUS["Tiny 系列"])}>Tiny 重点</button><button type="button" onClick={() => setPreset(SERIES_FOCUS["Meet 系列"])}>Meet 重点</button></div>
+        <label>产品池<select value={familyFilter} onChange={(event) => setFamilyFilter(event.target.value)}>{FAMILY_OPTIONS.map((family) => <option value={family} key={family}>{family}</option>)}</select></label>
+        <div className="mode-switch" aria-label="热力图口径"><button type="button" className={mode === "share" ? "active" : ""} onClick={() => setMode("share")}>产品内部占比</button><button type="button" className={mode === "count" ? "active" : ""} onClick={() => setMode("count")}>实际件数</button></div>
+      </div>
+      <div className="compare-picker">
+        <div><b>选择 2–5 款产品</b><span>已选 {selectedModels.length}/5；跨系列选择时可横向比较</span></div>
+        <div className="compare-product-pills">{visibleModels.map((model) => <button type="button" aria-pressed={selectedNames.includes(model.name)} className={selectedNames.includes(model.name) ? "selected" : ""} key={model.name} onClick={() => toggleModel(model.name)}>{model.name}</button>)}</div>
+      </div>
+      <div className="compare-insights">
+        <article><span>退货规模最高</span><b>{volumeLeader?.name || "暂无数据"}</b><p>{volumeLeader ? `${number(volumeLeader.count)} 件，占当前对比组 ${pct(volumeLeader.count / comparisonTotal)}` : "—"}</p></article>
+        <article><span>技术问题占比最高</span><b>{riskLeader?.name || "暂无数据"}</b><p>{riskLeader ? `${number(riskLeader.productIssueCount)} 件 · ${pct(riskLeader.productIssueShare)}` : "—"}</p></article>
+        <article><span>留言覆盖最高</span><b>{coverageLeader?.name || "暂无数据"}</b><p>{coverageLeader ? `${number(coverageLeader.commentCount)} 件有留言 · ${pct(coverageLeader.commentCoverage)}` : "—"}</p></article>
+      </div>
+      <div className="compare-table-wrap">
+        <table className="compare-metrics-table"><thead><tr><th>产品</th><th>系列</th><th>退货件数</th><th>对比组占比</th><th>技术问题</th><th>留言覆盖</th><th>Top 1 原因</th><th>Top 2 原因</th></tr></thead><tbody>{selectedModels.map((model) => <tr key={model.name} onClick={() => onSelect(model.name)}><td><i style={{ background: FAMILY_COLORS[model.family] }} /><b>{model.name}</b></td><td>{model.family}</td><td><strong>{number(model.count)}</strong></td><td>{pct(model.count / comparisonTotal)}</td><td className={model.productIssueShare >= .6 ? "risk-high" : ""}>{number(model.productIssueCount)}件 · {pct(model.productIssueShare)}</td><td>{number(model.commentCount)}件 · {pct(model.commentCoverage)}</td><td>{model.reasons[0]?.label || "—"}<small>{pct(model.reasons[0]?.share || 0)}</small></td><td>{model.reasons[1]?.label || "—"}<small>{pct(model.reasons[1]?.share || 0)}</small></td></tr>)}</tbody></table>
+      </div>
+      <div className="compare-visual-grid">
+        <div className="compare-visual"><header><h3>产品 × 核心退货原因</h3><p>{mode === "share" ? "各原因占该产品退货件数的比例" : "各原因对应的实际退货件数"}</p></header><div className="compare-heatmap" style={{ "--compare-reasons": reasonLabels.length }}><div className="compare-heat-corner">产品</div>{reasonLabels.map((label) => <div className="compare-heat-label" key={label}>{label}</div>)}{selectedModels.map((model) => <div className="compare-heat-row" key={model.name}><button type="button" onClick={() => onSelect(model.name)}>{model.name}</button>{reasonLabels.map((label) => { const value = reasonValue(model, label); const alpha = .06 + value / maxHeat * .76; return <div key={label} style={{ background: `rgba(255,104,70,${alpha})`, color: alpha > .52 ? "#fff" : "#293247" }}>{mode === "share" ? pct(value) : number(value)}</div>; })}</div>)}</div></div>
+        <div className="compare-visual"><header><h3>多产品月度趋势</h3><p>展示绝对退货件数；不完整月份不直接作环比结论</p></header><CompareTrend models={selectedModels} /></div>
+      </div>
+      <p className="compare-footnote">说明：退货件数用于衡量当前数据中的问题规模；因缺少各型号销量/发货量分母，本模块不计算或比较退货率。</p>
+    </div>
+  );
+}
+
 function LeadershipActions() {
   const actions = [
     ["P0", "兼容与场景边界前置", "不兼容、与描述不符和误购合计占比较高；Listing首屏应明确接口、系统、软件与典型场景边界。"],
@@ -465,6 +590,7 @@ function LeadershipActions() {
 export default function Page() {
   const [family, setFamily] = useState("全部");
   const [selectedModel, setSelectedModel] = useState("ALL");
+  const [selectedReason, setSelectedReason] = useState("");
   const [selectedDetail, setSelectedDetail] = useState("");
 
   const familyModels = useMemo(() => data.models.filter((model) => family === "全部" || model.family === family), [family]);
@@ -520,17 +646,25 @@ export default function Page() {
         </Panel>
       )}
 
+      <Panel title="产品多维对比" subtitle="自由选择 2–5 款产品，从规模、原因结构、技术问题、留言覆盖与月度趋势进行横向比较" tag="产品维度" className="product-compare-panel">
+        <ProductCompareDashboard models={data.models.filter((model) => model.count > 0)} onSelect={selectModel} />
+      </Panel>
+
       <section className="main-grid">
         <Panel title="产品退货规模与风险" subtitle="点击型号可直接下钻其退货原因" tag="产品维度" className="model-panel">
           <ModelRanking models={familyModels} selectedModel={selectedModel} onSelect={selectModel} />
         </Panel>
         <Panel title={`${currentName} · 退货原因 TOP 8`} subtitle="占比以当前筛选的退货件数为分母" tag="核心原因" className="reason-panel">
-          <ReasonRanking reasons={reasons} color={currentColor} />
+          <ReasonRanking reasons={reasons} color={currentColor} selectedLabel={selectedReason} onSelect={setSelectedReason} />
         </Panel>
         <Panel title="原因大类构成" subtitle="拆分产品、购买决策、履约与其他因素" className="group-panel">
           <GroupDonut reasons={reasons} total={total} />
         </Panel>
       </section>
+
+      <Panel title={`${currentName} · 核心原因产品贡献`} subtitle="点击上方核心原因切换；同时查看该原因由哪些产品贡献、产品内部占比及对应真实留言" tag="原因下钻" className="core-drill-panel">
+        <CoreReasonBreakdown reasons={reasons} models={scopeModels} selectedLabel={selectedReason} onSelectModel={selectModel} color={currentColor} />
+      </Panel>
 
       <Panel title={`${currentName} · 具体退货问题细分`} subtitle="从客户留言继续拆到可行动的具体症状；点击左侧问题查看表现、建议与原声证据" tag="二级 / 三级原因" className="detail-panel">
         <DetailedReasonAnalysis
