@@ -623,13 +623,13 @@ export default function Page() {
     <main className="dashboard-shell">
       <header className="dashboard-header">
         <div className="title-block"><div className="brand-logo"><Image src={obsbotLogo} alt="OBSBOT Logo" priority /></div><div><p>Amazon Customer Return · 2026 YTD</p><h1>OBSBOT 全型号退货原因管理看板</h1></div></div>
-        <div className="header-meta"><span>数据更新至 {data.meta.dateMax}</span><button type="button" onClick={() => window.print()}>导出 PDF</button></div>
+        <div className="header-meta"><span>数据更新至 {data.meta.dateMax}</span><a className="product-report-link" href="product/tiny-2-lite/">Tiny 2 Lite 最新评论专题</a><button type="button" onClick={() => window.print()}>导出 PDF</button></div>
       </header>
 
       <FilterBar family={family} model={selectedModel} onFamilyChange={changeFamily} onModelChange={setSelectedModel} models={familyModels} />
 
       <div className="scope-strip">
-        <strong>当前视图：{currentName}</strong><span>{scopeModels.length} 个型号</span><span>4份历史报告 + Meet Flip补充</span><span>{number(data.meta.rawRows)} 条源记录 → {number(data.meta.returnUnits)} 件退货</span><em>件数构成，不代表退货率</em>
+        <strong>当前视图：{currentName}</strong><span>{scopeModels.length} 个型号</span><span>{number(data.meta.rawRows)} 条源记录 → {number(data.meta.returnUnits)} 件退货</span><em>件数构成，不代表退货率</em>
       </div>
 
       <section className="kpi-grid">

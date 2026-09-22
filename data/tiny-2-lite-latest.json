@@ -1,0 +1,898 @@
+{
+  "meta": {
+    "product": "Tiny 2 Lite",
+    "asin": "B0CZ6XY78Y",
+    "reviewSite": "Amazon US",
+    "reviewSourceRows": 432,
+    "reviewUnique": 432,
+    "reviewDateMin": "2024-07-02",
+    "reviewDateMax": "2026-09-16",
+    "exportDate": "2026-09-22",
+    "lowStar2026": 28,
+    "sampleMean": 3.97
+  },
+  "stars": [
+    {
+      "star": 5,
+      "count": 270
+    },
+    {
+      "star": 4,
+      "count": 47
+    },
+    {
+      "star": 3,
+      "count": 19
+    },
+    {
+      "star": 2,
+      "count": 25
+    },
+    {
+      "star": 1,
+      "count": 71
+    }
+  ],
+  "monthly": [
+    {
+      "month": "2024-07",
+      "count": 25,
+      "average": 4.32,
+      "lowCount": 2,
+      "lowShare": 0.08
+    },
+    {
+      "month": "2024-08",
+      "count": 12,
+      "average": 4.42,
+      "lowCount": 1,
+      "lowShare": 0.0833
+    },
+    {
+      "month": "2024-09",
+      "count": 13,
+      "average": 4.38,
+      "lowCount": 1,
+      "lowShare": 0.0769
+    },
+    {
+      "month": "2024-10",
+      "count": 17,
+      "average": 4.71,
+      "lowCount": 1,
+      "lowShare": 0.0588
+    },
+    {
+      "month": "2024-11",
+      "count": 14,
+      "average": 3.93,
+      "lowCount": 4,
+      "lowShare": 0.2857
+    },
+    {
+      "month": "2024-12",
+      "count": 22,
+      "average": 4.0,
+      "lowCount": 4,
+      "lowShare": 0.1818
+    },
+    {
+      "month": "2025-01",
+      "count": 15,
+      "average": 4.07,
+      "lowCount": 3,
+      "lowShare": 0.2
+    },
+    {
+      "month": "2025-02",
+      "count": 20,
+      "average": 3.9,
+      "lowCount": 5,
+      "lowShare": 0.25
+    },
+    {
+      "month": "2025-03",
+      "count": 16,
+      "average": 4.19,
+      "lowCount": 2,
+      "lowShare": 0.125
+    },
+    {
+      "month": "2025-04",
+      "count": 24,
+      "average": 3.29,
+      "lowCount": 10,
+      "lowShare": 0.4167
+    },
+    {
+      "month": "2025-05",
+      "count": 17,
+      "average": 4.29,
+      "lowCount": 2,
+      "lowShare": 0.1176
+    },
+    {
+      "month": "2025-06",
+      "count": 13,
+      "average": 3.31,
+      "lowCount": 6,
+      "lowShare": 0.4615
+    },
+    {
+      "month": "2025-07",
+      "count": 23,
+      "average": 4.09,
+      "lowCount": 5,
+      "lowShare": 0.2174
+    },
+    {
+      "month": "2025-08",
+      "count": 19,
+      "average": 4.05,
+      "lowCount": 4,
+      "lowShare": 0.2105
+    },
+    {
+      "month": "2025-09",
+      "count": 27,
+      "average": 4.48,
+      "lowCount": 2,
+      "lowShare": 0.0741
+    },
+    {
+      "month": "2025-10",
+      "count": 19,
+      "average": 3.53,
+      "lowCount": 6,
+      "lowShare": 0.3158
+    },
+    {
+      "month": "2025-11",
+      "count": 27,
+      "average": 3.56,
+      "lowCount": 9,
+      "lowShare": 0.3333
+    },
+    {
+      "month": "2025-12",
+      "count": 17,
+      "average": 4.59,
+      "lowCount": 1,
+      "lowShare": 0.0588
+    },
+    {
+      "month": "2026-01",
+      "count": 14,
+      "average": 3.93,
+      "lowCount": 4,
+      "lowShare": 0.2857
+    },
+    {
+      "month": "2026-02",
+      "count": 12,
+      "average": 4.17,
+      "lowCount": 2,
+      "lowShare": 0.1667
+    },
+    {
+      "month": "2026-03",
+      "count": 12,
+      "average": 4.5,
+      "lowCount": 1,
+      "lowShare": 0.0833
+    },
+    {
+      "month": "2026-04",
+      "count": 12,
+      "average": 3.67,
+      "lowCount": 4,
+      "lowShare": 0.3333
+    },
+    {
+      "month": "2026-05",
+      "count": 13,
+      "average": 3.69,
+      "lowCount": 4,
+      "lowShare": 0.3077
+    },
+    {
+      "month": "2026-06",
+      "count": 13,
+      "average": 3.62,
+      "lowCount": 4,
+      "lowShare": 0.3077
+    },
+    {
+      "month": "2026-07",
+      "count": 4,
+      "average": 3.0,
+      "lowCount": 2,
+      "lowShare": 0.5
+    },
+    {
+      "month": "2026-08",
+      "count": 7,
+      "average": 3.71,
+      "lowCount": 2,
+      "lowShare": 0.2857
+    },
+    {
+      "month": "2026-09",
+      "count": 5,
+      "average": 1.0,
+      "lowCount": 5,
+      "lowShare": 1.0
+    }
+  ],
+  "topics2026LowStar": [
+    {
+      "label": "云台 / 跟踪",
+      "count": 9
+    },
+    {
+      "label": "功能预期",
+      "count": 7
+    },
+    {
+      "label": "连接 / 无画面",
+      "count": 5
+    },
+    {
+      "label": "软件 / 固件",
+      "count": 4
+    },
+    {
+      "label": "软件 / 性能",
+      "count": 3
+    },
+    {
+      "label": "售后 / 保修",
+      "count": 3
+    },
+    {
+      "label": "睡眠 / 隐私",
+      "count": 2
+    },
+    {
+      "label": "软件 / 兼容",
+      "count": 2
+    },
+    {
+      "label": "发热 / 硬件",
+      "count": 2
+    },
+    {
+      "label": "云台 / 控制",
+      "count": 1
+    },
+    {
+      "label": "体验 / 未明确",
+      "count": 1
+    },
+    {
+      "label": "画质 / 分辨率",
+      "count": 1
+    },
+    {
+      "label": "画质 / 光线",
+      "count": 1
+    },
+    {
+      "label": "音频 / 画质",
+      "count": 1
+    },
+    {
+      "label": "包装 / 缺件",
+      "count": 1
+    }
+  ],
+  "recentReviews": [
+    {
+      "id": "R1W5PPMABHGXPF",
+      "date": "2026-09-16",
+      "star": 1,
+      "title": "Privacy ?????",
+      "text": "Great camera but it started turning on by itself even though I put it to sleep. I now have to pull the plug behind. Getting way too sketchy.",
+      "summaryZh": "睡眠后自行唤醒；隐私担忧",
+      "topics": [
+        "睡眠 / 隐私",
+        "云台 / 控制"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1W5PPMABHGXPF"
+    },
+    {
+      "id": "R2192J2QX919IY",
+      "date": "2026-09-13",
+      "star": 1,
+      "title": "Not usable",
+      "text": "This camera was useless. tried using it with OBS streaming to sell on Whatnot and it would not stream a image. Worthless.",
+      "summaryZh": "在 OBS 与 Whatnot 直播场景中无法输出画面。",
+      "topics": [
+        "连接 / 无画面",
+        "软件 / 兼容"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2192J2QX919IY"
+    },
+    {
+      "id": "R4J05MERK3H3A",
+      "date": "2026-09-10",
+      "star": 1,
+      "title": "Poorly optimized software, uses way too many resources.",
+      "text": "Leaving 1 star because I bought this camera mainly for the beauty mode feature and it's impossible to use properly. The software is terribly optimized; it puts way too much strain on the graphics card (and mine isn't even that old) if you try to use beauty mode and game at the same time. Whenever I activate the virtual camera for beauty mode, the PC freezes completely, even with lightweight games like Valorant. It's disappointing that they don't release updates to fix this. I ended up having to use it without the feature I actually bought it for. Do not recommend if you plan to game and stream at the same time.",
+      "summaryZh": "美颜虚拟摄像头与游戏同时使用时 GPU 负载高，电脑冻结；因此无法正常使用购买时看重的美颜功能。",
+      "topics": [
+        "软件 / 性能",
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R4J05MERK3H3A"
+    },
+    {
+      "id": "R3VP324A7570ID",
+      "date": "2026-09-08",
+      "star": 1,
+      "title": "Haunted.",
+      "text": "Haunted. AI camera just starts fast tilting left and right until it's range of motion is hit.\nDriver updates and/or BIOS update did not resolve.",
+      "summaryZh": "云台自行快速左右摆动，驱动和 BIOS 更新后仍未解决。",
+      "topics": [
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3VP324A7570ID"
+    },
+    {
+      "id": "R3II84PNDN8KIP",
+      "date": "2026-09-07",
+      "star": 1,
+      "title": "¡La actualización del sofware la ha dañado!",
+      "text": "A quien se le ocurre tener en venta un producto el cual no es compatible con el sofware nuevo para su instalación? Me parece terrible, no pude sacarle provecho a su funcionalidad completa, se me ha dañado el sensor de movimiento.",
+      "summaryZh": "客户称新版软件安装后不兼容，无法使用完整功能，并称动作传感器损坏；因果关系尚未经验证。",
+      "topics": [
+        "软件 / 固件",
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3II84PNDN8KIP"
+    },
+    {
+      "id": "RHLK4BG3KL266",
+      "date": "2026-08-27",
+      "star": 3,
+      "title": "Está dañado",
+      "text": "Dañado quisiera un remplazo",
+      "summaryZh": "",
+      "topics": [],
+      "url": "https://www.amazon.com/gp/customer-reviews/RHLK4BG3KL266"
+    },
+    {
+      "id": "R1QO38F9BHPKJS",
+      "date": "2026-08-27",
+      "star": 2,
+      "title": "Good luck if you need a warranty",
+      "text": "The camera is excellent, and I hope yours does not encounter any issues. My camera was exceptional, and it featured AI gestures for my live stream. The software was somewhat unconventional, but it was understandable. The AI hand gestures connected to the algorithm if the appropriate background color was present or moved slightly to a different background. However, the issues you have encountered in negative reviews have arisen. It is nearly impossible to use the camera now. I cannot track without fear that it will always attempt to point to the sky. I am out of the return window with Amazon, so I contacted this company. They have requested numerous things, and if you take longer than a day, they constantly threaten to close the ticket. I do not stream full-time; I have a job and other commitments. I have met all their requests with constant blame directed at me, stating that I am responsible for the issues. How can I be responsible when the problem was not present before? I am still attempting to obtain a warranty repair. The camera is incredibly impressive! I hope you will be able to use yours without any issues. This company has proven to be a constant source of conflict in resolving my concerns.",
+      "summaryZh": "原先对画质和手势功能满意，后来跟踪会指向天花板；客户称过了亚马逊退货期后，保修沟通和处理困难。",
+      "topics": [
+        "云台 / 跟踪",
+        "售后 / 保修"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1QO38F9BHPKJS"
+    },
+    {
+      "id": "R3T2RT4OQ6VO0M",
+      "date": "2026-08-19",
+      "star": 5,
+      "title": "Fantastic camera",
+      "text": "This is a great camera if you need to do a lot of video calls and want a clear and bright look.",
+      "summaryZh": "",
+      "topics": [],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3T2RT4OQ6VO0M"
+    },
+    {
+      "id": "R1E9JE7NE0QJQI",
+      "date": "2026-08-08",
+      "star": 5,
+      "title": "La recomiendo al 100.",
+      "text": "Es excelente cámara por excelente precio, vale la pena 100 %",
+      "summaryZh": "",
+      "topics": [],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1E9JE7NE0QJQI"
+    },
+    {
+      "id": "R38AWUOT748RRD",
+      "date": "2026-08-07",
+      "star": 5,
+      "title": "works great",
+      "text": "I love it and works perfectly",
+      "summaryZh": "",
+      "topics": [],
+      "url": "https://www.amazon.com/gp/customer-reviews/R38AWUOT748RRD"
+    },
+    {
+      "id": "R3FWURFMOJ2LOE",
+      "date": "2026-08-06",
+      "star": 1,
+      "title": "PC doesn’t recognize it anymore",
+      "text": "Little under a year and it’s shot.\nComputer won’t recognize it anymore, the motor head keeps spinning in random directions uncontrollably. Worked great when it was working properly. Now it’s just literal garbage. Believe the other reviews and stay away from this product. Waste of money.",
+      "summaryZh": "使用不足一年后电脑不再识别，云台也无规律旋转；客户称此前使用正常。",
+      "topics": [
+        "连接 / 无画面",
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3FWURFMOJ2LOE"
+    },
+    {
+      "id": "R2KJABGHJ39EWC",
+      "date": "2026-08-05",
+      "star": 5,
+      "title": "Real clear 4k worth the price",
+      "text": "This camera has great reviews for a reason great quality so many people I know switched and use it casually. Highly recommend",
+      "summaryZh": "",
+      "topics": [],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2KJABGHJ39EWC"
+    }
+  ],
+  "lowStarReviews2026": [
+    {
+      "id": "R1W5PPMABHGXPF",
+      "date": "2026-09-16",
+      "star": 1,
+      "title": "Privacy ?????",
+      "text": "Great camera but it started turning on by itself even though I put it to sleep. I now have to pull the plug behind. Getting way too sketchy.",
+      "summaryZh": "睡眠后自行唤醒；隐私担忧",
+      "topics": [
+        "睡眠 / 隐私",
+        "云台 / 控制"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1W5PPMABHGXPF"
+    },
+    {
+      "id": "R2192J2QX919IY",
+      "date": "2026-09-13",
+      "star": 1,
+      "title": "Not usable",
+      "text": "This camera was useless. tried using it with OBS streaming to sell on Whatnot and it would not stream a image. Worthless.",
+      "summaryZh": "在 OBS 与 Whatnot 直播场景中无法输出画面。",
+      "topics": [
+        "连接 / 无画面",
+        "软件 / 兼容"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2192J2QX919IY"
+    },
+    {
+      "id": "R4J05MERK3H3A",
+      "date": "2026-09-10",
+      "star": 1,
+      "title": "Poorly optimized software, uses way too many resources.",
+      "text": "Leaving 1 star because I bought this camera mainly for the beauty mode feature and it's impossible to use properly. The software is terribly optimized; it puts way too much strain on the graphics card (and mine isn't even that old) if you try to use beauty mode and game at the same time. Whenever I activate the virtual camera for beauty mode, the PC freezes completely, even with lightweight games like Valorant. It's disappointing that they don't release updates to fix this. I ended up having to use it without the feature I actually bought it for. Do not recommend if you plan to game and stream at the same time.",
+      "summaryZh": "美颜虚拟摄像头与游戏同时使用时 GPU 负载高，电脑冻结；因此无法正常使用购买时看重的美颜功能。",
+      "topics": [
+        "软件 / 性能",
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R4J05MERK3H3A"
+    },
+    {
+      "id": "R3VP324A7570ID",
+      "date": "2026-09-08",
+      "star": 1,
+      "title": "Haunted.",
+      "text": "Haunted. AI camera just starts fast tilting left and right until it's range of motion is hit.\nDriver updates and/or BIOS update did not resolve.",
+      "summaryZh": "云台自行快速左右摆动，驱动和 BIOS 更新后仍未解决。",
+      "topics": [
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3VP324A7570ID"
+    },
+    {
+      "id": "R3II84PNDN8KIP",
+      "date": "2026-09-07",
+      "star": 1,
+      "title": "¡La actualización del sofware la ha dañado!",
+      "text": "A quien se le ocurre tener en venta un producto el cual no es compatible con el sofware nuevo para su instalación? Me parece terrible, no pude sacarle provecho a su funcionalidad completa, se me ha dañado el sensor de movimiento.",
+      "summaryZh": "客户称新版软件安装后不兼容，无法使用完整功能，并称动作传感器损坏；因果关系尚未经验证。",
+      "topics": [
+        "软件 / 固件",
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3II84PNDN8KIP"
+    },
+    {
+      "id": "R1QO38F9BHPKJS",
+      "date": "2026-08-27",
+      "star": 2,
+      "title": "Good luck if you need a warranty",
+      "text": "The camera is excellent, and I hope yours does not encounter any issues. My camera was exceptional, and it featured AI gestures for my live stream. The software was somewhat unconventional, but it was understandable. The AI hand gestures connected to the algorithm if the appropriate background color was present or moved slightly to a different background. However, the issues you have encountered in negative reviews have arisen. It is nearly impossible to use the camera now. I cannot track without fear that it will always attempt to point to the sky. I am out of the return window with Amazon, so I contacted this company. They have requested numerous things, and if you take longer than a day, they constantly threaten to close the ticket. I do not stream full-time; I have a job and other commitments. I have met all their requests with constant blame directed at me, stating that I am responsible for the issues. How can I be responsible when the problem was not present before? I am still attempting to obtain a warranty repair. The camera is incredibly impressive! I hope you will be able to use yours without any issues. This company has proven to be a constant source of conflict in resolving my concerns.",
+      "summaryZh": "原先对画质和手势功能满意，后来跟踪会指向天花板；客户称过了亚马逊退货期后，保修沟通和处理困难。",
+      "topics": [
+        "云台 / 跟踪",
+        "售后 / 保修"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1QO38F9BHPKJS"
+    },
+    {
+      "id": "R3FWURFMOJ2LOE",
+      "date": "2026-08-06",
+      "star": 1,
+      "title": "PC doesn’t recognize it anymore",
+      "text": "Little under a year and it’s shot.\nComputer won’t recognize it anymore, the motor head keeps spinning in random directions uncontrollably. Worked great when it was working properly. Now it’s just literal garbage. Believe the other reviews and stay away from this product. Waste of money.",
+      "summaryZh": "使用不足一年后电脑不再识别，云台也无规律旋转；客户称此前使用正常。",
+      "topics": [
+        "连接 / 无画面",
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3FWURFMOJ2LOE"
+    },
+    {
+      "id": "R35QGSQ5R1KZ8R",
+      "date": "2026-07-10",
+      "star": 1,
+      "title": "not very good",
+      "text": "The quality of this camera is horrible.",
+      "summaryZh": "仅表示摄像头质量很差，未说明具体症状。",
+      "topics": [
+        "体验 / 未明确"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R35QGSQ5R1KZ8R"
+    },
+    {
+      "id": "R2XWH5XWOL5GMR",
+      "date": "2026-07-03",
+      "star": 1,
+      "title": "$150 down the drain",
+      "text": "Over heated and fell apart don’t buy",
+      "summaryZh": "客户称设备过热并出现结构损坏。",
+      "topics": [
+        "发热 / 硬件"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2XWH5XWOL5GMR"
+    },
+    {
+      "id": "R2WRIIBJXPSD2F",
+      "date": "2026-06-16",
+      "star": 1,
+      "title": "Niet zo tevreden",
+      "text": "Geen\nBluetooth",
+      "summaryZh": "客户仅写“没有蓝牙”；是否属于宣传或选型预期需核对。",
+      "topics": [
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2WRIIBJXPSD2F"
+    },
+    {
+      "id": "R2M7MBO6NBM5PP",
+      "date": "2026-06-13",
+      "star": 1,
+      "title": "Do not recommend",
+      "text": "After a few weeks it stopped tracking and following any motion.  Now return window is closed and I’m SOL!",
+      "summaryZh": "使用数周后停止跟踪人物，且已过退货窗口。",
+      "topics": [
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R2M7MBO6NBM5PP"
+    },
+    {
+      "id": "R1A3IUPHKVABJD",
+      "date": "2026-06-10",
+      "star": 2,
+      "title": "Good camera, bad software, poor testing.",
+      "text": "UPDATE: The software developers just rolled out the fix for missing 4k resolution, but it looks pure cosmetic. The 4k now appears in the list of available resolutions, but even when it's selected the actual recording is still 1080. I'm returning the camera and looking for something more reliable.\n\nThe camera itself is ok, I like the quality and default picture settings; motion tracking is not perfect but acceptable. Taking two stars off because the software (OBSBOT Center) is overcomplicated and buggy. The worst thing is that it does not allow to select 4k resolution, the best option available is 1080@60fps. I tried a lot of things without any result. At the same time I was able to use the camera directly in other software like OBS Studio or Windows 11 Camera and 4k worked fine, so the problem is not in the camera or environment, but in the OBSBOT Center. The camera can be used without it, but some functions like virtual camera, overlays etc. will be unavailable or hard to configure. I've contacted customer support, still waiting for reply, but I suspect that my best option is to return the camera and get another brand with better software.",
+      "summaryZh": "客户称 OBSBOT Center 的 4K 选项及实际录制表现有问题，直接用 OBS Studio 或 Windows 相机时 4K 可用；同时认为软件设置复杂。",
+      "topics": [
+        "软件 / 固件",
+        "画质 / 分辨率"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1A3IUPHKVABJD"
+    },
+    {
+      "id": "RA1WN0S8ZT4HC",
+      "date": "2026-06-09",
+      "star": 2,
+      "title": "okay but not realiable.",
+      "text": "This was working fine for almost a year. But the camera doesn't wake up anymore to pan to me (the subject). it is stuck facing down. it is still being read by the PC and the software but it is completely useless.",
+      "summaryZh": "使用近一年后云台朝下卡住；电脑仍能识别设备。",
+      "topics": [
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/RA1WN0S8ZT4HC"
+    },
+    {
+      "id": "R3L4EB849PLUF0",
+      "date": "2026-05-31",
+      "star": 2,
+      "title": "Overpriced webcam with harsh lighting that ruined my streaming setup",
+      "text": "I bought this webcam for streaming and YouTube gaming, and it ended up being a big disappointment. The built‑in lighting is extremely bright, to the point where it lit up my whole room and made the video uncomfortable for both me and my audience. No matter how I adjusted it, the lighting was still harsh and distracting.For the price, I expected something much more usable. The quality didn’t match the cost, and the lighting alone made it impossible for me to stream the way I needed. I ended up returning it because it just wasn’t worth the money.",
+      "summaryZh": "直播场景中灯光过亮且难以调节，认为价格与体验不匹配，并称已退货。",
+      "topics": [
+        "画质 / 光线",
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3L4EB849PLUF0"
+    },
+    {
+      "id": "RMHPTKSTZLPLY",
+      "date": "2026-05-28",
+      "star": 1,
+      "title": "Gimbal going nuts",
+      "text": "I have had the camera for a little over a year -- used it lightly. Now the gimbal keeps banging around and the camera won't focus on me. I will rewrite this if I get customer service.",
+      "summaryZh": "轻度使用约一年后云台反复撞动，无法对准人脸。",
+      "topics": [
+        "云台 / 跟踪"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/RMHPTKSTZLPLY"
+    },
+    {
+      "id": "R323RO3W857T0L",
+      "date": "2026-05-13",
+      "star": 1,
+      "title": "Stopped working 2nd month",
+      "text": "I really liked this camera at first. But it stopped working after a month or two- right in the middle of a business meeting. It just drooped down and will not rise itself back up. It is completely useless now and a waste of over $100. The support for this company is obnoxious and convoluted. You have to create some strange account that doesn’t get communication. Maybe their $500 dollars are better but I would not risk it.",
+      "summaryZh": "购买后约一两个月，云台在会议中下垂且无法抬起；客户同时抱怨售后流程。",
+      "topics": [
+        "云台 / 跟踪",
+        "售后 / 保修"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R323RO3W857T0L"
+    },
+    {
+      "id": "R1OKGQVQGPDOKM",
+      "date": "2026-05-07",
+      "star": 1,
+      "title": "Time to return it has passed unfortunately",
+      "text": "I had a difficult time making this thing work for me.  I went back to my previous Logitech camera and microphone.  My previous camera was set up for facial recognition, the OBSBOT never worked for that. Unfortunately, the time to return it has passed.",
+      "summaryZh": "客户称面部识别功能不符合其需求，已重新使用原来的摄像头，且错过退货期。",
+      "topics": [
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1OKGQVQGPDOKM"
+    },
+    {
+      "id": "R206I92CBN5L03",
+      "date": "2026-04-29",
+      "star": 1,
+      "title": "Bulging camera and fire hazard",
+      "text": "Honestly, there should be a recall on this camera. Zero stars if I could. My camera started to blow up and got overheated without me being around when I was on a meeting at night. It started bulging thank God I caught it before anything bad could happen. This is not good at all, especially if you have kids around very bad camera and it was my first time using it. Thank you Amazon for giving me a refund quickly as possible. This is not safe and is a fire hazard. I wasn’t able to return it at all could be considered a fire hazard.",
+      "summaryZh": "客户称首次会议使用时设备发热、机身鼓起，担忧安全风险；该情况为客户陈述，需核实。",
+      "topics": [
+        "发热 / 硬件"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R206I92CBN5L03"
+    },
+    {
+      "id": "RDQ7MXLO9X9QH",
+      "date": "2026-04-13",
+      "star": 2,
+      "title": "Was great until it malfunctioned and support didn’t help",
+      "text": "This is a great looking webcam, and for the time period that its functional will work great. But I had my camera for less than a year and a half before it started spinning back and forth out of control. I tried every troubleshooting step I could think of; reinstalling software, checking settings, updating firmware, switching computers, and the issue persisted. Contacted OBSbot support and they had me do the steps against and then sent me some firmware update over a Google Drive that stopped the spinning but also made the camera no longer function. Their solution at that point was to pay for a repair that costs as much as what I paid for the camera here, or a discount on a new purchase from their site that would still be more expensive than buying one here. Avoid the headache and get something else.",
+      "summaryZh": "使用不到一年半后云台失控旋转；客户称售后提供的固件使设备无法使用，并对维修方案不满。",
+      "topics": [
+        "云台 / 跟踪",
+        "软件 / 固件",
+        "售后 / 保修"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/RDQ7MXLO9X9QH"
+    },
+    {
+      "id": "R3DRJX41E291W0",
+      "date": "2026-04-10",
+      "star": 2,
+      "title": "Good for 2 months",
+      "text": "Worked for about a month. Powers on but no connection.",
+      "summaryZh": "使用约一个月后可通电但无法连接。",
+      "topics": [
+        "连接 / 无画面"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3DRJX41E291W0"
+    },
+    {
+      "id": "R1VXW8T07826I9",
+      "date": "2026-04-04",
+      "star": 1,
+      "title": "Error obsbot tiny 2 lite",
+      "text": "Recibi mi cámara la abri y la conecte pero no funciona, no deja de aparecer una luz azul y amarilla de ella y no se activa",
+      "summaryZh": "收到后连接无法启用，仅反复出现蓝黄指示灯。",
+      "topics": [
+        "连接 / 无画面"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1VXW8T07826I9"
+    },
+    {
+      "id": "R39TLRO36EHDY8",
+      "date": "2026-03-03",
+      "star": 1,
+      "title": "Less then expected",
+      "text": "Reading the description I was under the impression this would be one of the better webcams out there.  I was indeed disappointed on the sound and picture quality of it.  Made video calling experience more frustrating in my opinion. Maybe I’ll stick to Logitech.",
+      "summaryZh": "认为声音与画面质量低于商品描述带来的预期。",
+      "topics": [
+        "音频 / 画质",
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R39TLRO36EHDY8"
+    },
+    {
+      "id": "R1515YXQFEXYW2",
+      "date": "2026-02-23",
+      "star": 1,
+      "title": "Good idea- but not functional for anything over a few minutes, won't stay connected.",
+      "text": "The camera seems cool and initially is very impressive.  But after using with Zoom and Teams, it clearly has connection and freezing problems.  I have updated the software the cable etc- it's not worth the trouble if you continually have unplug it and plug it back in to stop it from freezing during a teleconference.",
+      "summaryZh": "在 Zoom、Teams 视频会议中反复断连或冻结，需要拔插恢复。",
+      "topics": [
+        "连接 / 无画面",
+        "软件 / 性能"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R1515YXQFEXYW2"
+    },
+    {
+      "id": "R442OFA9DQW6D",
+      "date": "2026-02-07",
+      "star": 1,
+      "title": "Mac users: Dont buy!",
+      "text": "Bad product ! if you are connecting to Mac, the entire machine slows up when you open their software - bad quality and for the same price you will get better products in logitech. Stay away!",
+      "summaryZh": "Mac 上打开配套软件后电脑变慢。",
+      "topics": [
+        "软件 / 性能",
+        "软件 / 兼容"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R442OFA9DQW6D"
+    },
+    {
+      "id": "R3IK18XX9A4G5F",
+      "date": "2026-01-31",
+      "star": 1,
+      "title": "Missing cords",
+      "text": "Arrived with missing cords",
+      "summaryZh": "收到商品时缺少线材。",
+      "topics": [
+        "包装 / 缺件"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R3IK18XX9A4G5F"
+    },
+    {
+      "id": "RUAAXC0WFL0JV",
+      "date": "2026-01-30",
+      "star": 1,
+      "title": "Doesn't work as expected",
+      "text": "Sleep mode never works, voice command doesn't show in app nor works. This thing creeps me out cuz it never sleeps I have to unplug it",
+      "summaryZh": "睡眠模式及语音命令未正常工作，需要拔电源。",
+      "topics": [
+        "睡眠 / 隐私",
+        "软件 / 固件"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/RUAAXC0WFL0JV"
+    },
+    {
+      "id": "R26T8GMC6R9AA1",
+      "date": "2026-01-16",
+      "star": 1,
+      "title": "Not worth the money and does not work as claimed",
+      "text": "Over priced and under delivers.",
+      "summaryZh": "认为价格偏高，功能表现不符合宣传；未说明具体故障。",
+      "topics": [
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R26T8GMC6R9AA1"
+    },
+    {
+      "id": "R20L44O5K8XDY5",
+      "date": "2026-01-01",
+      "star": 2,
+      "title": "Perfect for computers and small videos",
+      "text": "Perfect for computers not for a large conference meetings.",
+      "summaryZh": "认为适合电脑或小型视频场景，不适合大型会议。",
+      "topics": [
+        "功能预期"
+      ],
+      "url": "https://www.amazon.com/gp/customer-reviews/R20L44O5K8XDY5"
+    }
+  ],
+  "returns": {
+    "sourceRows": 103,
+    "units": 103,
+    "dateMin": "2026-08-22",
+    "dateMax": "2026-09-20",
+    "commentedRows": 37,
+    "reasons": [
+      {
+        "code": "NOT_AS_DESCRIBED",
+        "count": 27
+      },
+      {
+        "code": "UNWANTED_ITEM",
+        "count": 22
+      },
+      {
+        "code": "DEFECTIVE",
+        "count": 18
+      },
+      {
+        "code": "ORDERED_WRONG_ITEM",
+        "count": 8
+      },
+      {
+        "code": "UNDELIVERABLE_UNKNOWN",
+        "count": 5
+      },
+      {
+        "code": "NOT_COMPATIBLE",
+        "count": 5
+      },
+      {
+        "code": "QUALITY_UNACCEPTABLE",
+        "count": 4
+      },
+      {
+        "code": "FOUND_BETTER_PRICE",
+        "count": 3
+      },
+      {
+        "code": "MISSED_ESTIMATED_DELIVERY",
+        "count": 2
+      },
+      {
+        "code": "DAMAGED_BY_FC",
+        "count": 2
+      },
+      {
+        "code": "UNDELIVERABLE_UNCLAIMED",
+        "count": 2
+      },
+      {
+        "code": "DAMAGED_BY_CARRIER",
+        "count": 1
+      },
+      {
+        "code": "UNAUTHORIZED_PURCHASE",
+        "count": 1
+      },
+      {
+        "code": "MISSING_PARTS",
+        "count": 1
+      },
+      {
+        "code": "NO_REASON_GIVEN",
+        "count": 1
+      },
+      {
+        "code": "NEVER_ARRIVED",
+        "count": 1
+      }
+    ],
+    "sites": [
+      {
+        "site": "US",
+        "count": 74
+      },
+      {
+        "site": "CA",
+        "count": 12
+      },
+      {
+        "site": "ES",
+        "count": 6
+      },
+      {
+        "site": "JP",
+        "count": 4
+      },
+      {
+        "site": "DE",
+        "count": 3
+      },
+      {
+        "site": "FR",
+        "count": 2
+      },
+      {
+        "site": "NL",
+        "count": 1
+      },
+      {
+        "site": "UK",
+        "count": 1
+      }
+    ]
+  },
+  "sourceNotes": [
+    "评论按 Amazon 评论 ID 去重；本批 432 条 ID 均唯一。",
+    "星级趋势为导出评论样本的月均星级，不是 Listing 历史星级。",
+    "2026 年 9 月仅统计至 9 月 16 日，样本不完整。",
+    "退货仅纳入 ASIN 精确匹配的 103 件，排除名称中出现 Tiny 2 Lite 的遥控器配件。",
+    "评论与退货来自不同数据表，无法逐条匹配或推断评论导致退货。"
+  ]
+}
